@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "vite",
+    "dev:auth": "VITE_DEV_AUTH=1 vite",
     "build": "vite build",
     "preview": "vite preview",
     "test": "vitest --run",
@@ -19,32 +20,43 @@
     "verify": "pnpm typecheck && pnpm lint && pnpm test"
   },
   "dependencies": {
+    "jose": "^5.10.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
+    "svix": "^1.76.1",
     "zustand": "^4.5.0"
   },
   "devDependencies": {
+    "@eslint/js": "^9.36.0",
+    "@playwright/test": "^1.47.0",
     "@storybook/react": "^8.0.0",
+    "@testing-library/jest-dom": "^6.8.0",
+    "@testing-library/react": "^16.3.0",
+    "@types/node": "^24.5.2",
     "@types/react": "^18.3.0",
     "@types/react-dom": "^18.3.0",
     "@typescript-eslint/eslint-plugin": "^7.0.0",
     "@typescript-eslint/parser": "^7.0.0",
     "@vitejs/plugin-react": "^4.2.0",
+    "ajv": "^8.17.1",
+    "ajv-formats": "^3.0.1",
     "autoprefixer": "^10.4.20",
+    "convex": "^1.27.1",
     "eslint": "^9.0.0",
     "eslint-config-prettier": "^9.0.0",
     "eslint-plugin-prettier": "^5.0.0",
     "eslint-plugin-react": "^7.35.0",
     "eslint-plugin-react-hooks": "^5.0.0",
+    "happy-dom": "^18.0.1",
+    "husky": "^9.0.0",
+    "jsdom": "^27.0.0",
+    "lint-staged": "^15.2.0",
     "postcss": "^8.4.47",
     "prettier": "^3.3.0",
     "tailwindcss": "^3.4.10",
-    "typescript": "^5.4.0",
+    "typescript": "^5.5.4",
     "vite": "^5.4.0",
-    "vitest": "^2.1.0",
-    "@playwright/test": "^1.47.0",
-    "husky": "^9.0.0",
-    "lint-staged": "^15.2.0"
+    "vitest": "^2.1.0"
   },
   "lint-staged": {
     "*.{ts,tsx,js,jsx}": [

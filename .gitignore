@@ -1,43 +1,35 @@
 node_modules/
 dist/
+## Core dependencies
+node_modules/
+.pnpm-store/
+
+## Build & bundler outputs
+dist/
 build/
 .turbo/
 .cache/
+.vite/
+.vite-cache/
+
+## Convex generated state
+.convex/
+
+## Coverage & test artifacts
 coverage/
-pnpm-lock.yaml
-.env
-.env.*
-.idea/
-.vscode/
-*.local
+playwright-report/
+test-results/
+.nyc_output/
+
+## Logs
 *.log
-storybooks-static/
-*.tgz
-
-# Local machine config
-.local-dev.json
-# Dependencies
-node_modules/
 pnpm-debug.log*
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
 
-# Environment variables
-.env
-
-# IDE and editor files
-.vscode/
-
-# Stores VSCode versions used for testing VSCode extensions
-.vscode-test
-
-# Temporary folders
-tmp/
-temp/
-
-# Production builds
-dist/
-build/
-
-# Archive files
+## Package archives
+*.tgz
 *.zip
 *.rar
 *.7z
@@ -45,26 +37,36 @@ build/
 *.tar.gz
 *.tar.bz2
 
-# Ignore any directory named "deprecated" at any level
+## Environment files (never commit secrets)
+.env
+.env.local
+.env.*.local
+.env.*
+*.local
+
+## IDE / Editor
+.idea/
+.vscode/
+!.vscode/extensions.json
+.vscode-test
+
+## Storybook build
+storybook-static/
+
+## Temporary
+tmp/
+temp/
+tmp/**
+temp/**
+*.tsbuildinfo
+
+## Local config
+.local-dev.json
+
+## Deprecated folders
 **/deprecated/
 **/*deprecated*/**
 
-# OS generated files
-
-
-# Logs
-
-
-# Runtime data
-
-
-
-# Vite cache
-
-
-# Local development files
-
-
-# Dokploy files
-dokploy
+## Dokploy files
+dokploy/
 

@@ -1,0 +1,12 @@
+import { Command } from "@commander-js/extra-typings";
+export declare const codegen: Command<[], {
+    dryRun?: true;
+    debug?: true;
+    typecheck: "try" | "enable" | "disable";
+    init?: true;
+    adminKey?: string;
+    url?: string;
+    liveComponentSources?: true;
+    commonjs?: true;
+}>;
+//# sourceMappingURL=codegen.d.ts.map

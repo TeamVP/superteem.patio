@@ -64,6 +64,7 @@ export function evaluate(expr: JSONLogicExpression, ctx: EvalContext): unknown {
 
 function resolveVar(path: string, answers: Record<string, unknown>): unknown {
   if (!path) return undefined;
+  if (path.startsWith('$')) path = path.slice(1);
   const parts = path.split('.');
   let cur: unknown = answers;
   for (const p of parts) {

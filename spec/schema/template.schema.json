@@ -1,0 +1,155 @@
+{
+  "$id": "https://patio.superteem.com/schema/template.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Template",
+  "type": "object",
+  "required": ["id", "type", "version", "body"],
+  "properties": {
+    "id": { "type": "string", "minLength": 1 },
+    "type": { "type": "string", "enum": ["survey", "observation"] },
+    "title": { "type": ["string", "null"] },
+    "description": { "type": ["string", "null"] },
+    "version": { "type": "string", "minLength": 1 },
+    "tags": { "type": "array", "items": { "type": "string" } },
+    "createdBy": { "type": ["string", "null"] },
+    "createdAt": { "type": ["string", "null"], "format": "date-time" },
+    "roles": { "type": "array", "items": { "type": "string" } },
+    "body": { "type": "array", "items": { "$ref": "#/$defs/Question" } }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "ValidationRule": {
+      "type": "object",
+      "required": ["expression", "errorMessage"],
+      "properties": {
+        "expression": { "type": "string", "minLength": 1 },
+        "errorMessage": { "type": "string", "minLength": 1 }
+      },
+      "additionalProperties": false
+    },
+    "BaseQuestion": {
+      "type": "object",
+      "required": ["type"],
+      "properties": {
+        "id": { "type": ["string", "null"] },
+        "type": { "type": "string" },
+        "label": { "type": ["string", "null"] },
+        "note": { "type": ["string", "null"] },
+        "required": { "type": ["boolean", "null"] },
+        "variable": { "type": ["string", "null"], "pattern": "^\\$[a-z0-9_]+$" },
+        "enableIf": { "type": ["string", "null"] },
+        "customValidations": { "type": "array", "items": { "$ref": "#/$defs/ValidationRule" } },
+        "display": { "type": ["number", "null"] },
+        "layout": { "type": ["number", "null"] }
+      },
+      "additionalProperties": false
+    },
+    "MultipleChoiceQuestion": {
+      "allOf": [
+        { "$ref": "#/$defs/BaseQuestion" },
+        {
+          "type": "object",
+          "required": ["type", "options"],
+          "properties": {
+            "type": { "const": "MultipleChoiceQuestion" },
+            "options": { "type": "array", "items": { "type": "string" }, "minItems": 1 },
+            "minimumResponses": { "type": ["number", "null"] },
+            "maximumResponses": { "type": ["number", "null"] }
+          }
+        }
+      ]
+    },
+    "StringQuestion": {
+      "allOf": [
+        { "$ref": "#/$defs/BaseQuestion" },
+        {
+          "type": "object",
+          "required": ["type"],
+          "properties": {
+            "type": { "const": "StringQuestion" },
+            "lineType": { "type": ["number", "null"] },
+            "minimumLength": { "type": ["number", "null"] },
+            "maximumLength": { "type": ["number", "null"] }
+          }
+        }
+      ]
+    },
+    "IntegerQuestion": {
+      "allOf": [
+        { "$ref": "#/$defs/BaseQuestion" },
+        {
+          "type": "object",
+          "required": ["type"],
+          "properties": {
+            "type": { "const": "IntegerQuestion" },
+            "minimum": { "type": ["number", "null"] },
+            "maximum": { "type": ["number", "null"] }
+          }
+        }
+      ]
+    },
+    "CompositeQuestion": {
+      "allOf": [
+        { "$ref": "#/$defs/BaseQuestion" },
+        {
+          "type": "object",
+          "required": ["type", "questions"],
+          "properties": {
+            "type": { "const": "CompositeQuestion" },
+            "questions": { "type": "array", "items": { "$ref": "#/$defs/Question" } }
+          }
+        }
+      ]
+    },
+    "ListQuestion": {
+      "allOf": [
+        { "$ref": "#/$defs/BaseQuestion" },
+        {
+          "type": "object",
+          "required": ["type", "question"],
+          "properties": {
+            "type": { "const": "ListQuestion" },
+            "minimumAnswers": { "type": ["number", "null"] },
+            "maximumAnswers": { "type": ["number", "null"] },
+            "question": { "$ref": "#/$defs/Question" }
+          }
+        }
+      ]
+    },
+    "UserQuestion": {
+      "allOf": [
+        { "$ref": "#/$defs/BaseQuestion" },
+        {
+          "type": "object",
+          "required": ["type"],
+          "properties": {
+            "type": { "const": "UserQuestion" },
+            "jobTypeCategories": { "type": ["array", "null"], "items": { "type": "string" } },
+            "jobTypeIds": { "type": ["array", "null"], "items": { "type": "string" } }
+          }
+        }
+      ]
+    },
+    "Question": {
+      "oneOf": [
+        { "$ref": "#/$defs/MultipleChoiceQuestion" },
+        { "$ref": "#/$defs/StringQuestion" },
+        { "$ref": "#/$defs/IntegerQuestion" },
+        { "$ref": "#/$defs/CompositeQuestion" },
+        { "$ref": "#/$defs/ListQuestion" },
+        { "$ref": "#/$defs/UserQuestion" }
+      ],
+      "discriminator": {
+        "propertyName": "type",
+        "mapping": {
+          "MultipleChoiceQuestion": "#/$defs/MultipleChoiceQuestion",
+          "StringQuestion": "#/$defs/StringQuestion",
+          "IntegerQuestion": "#/$defs/IntegerQuestion",
+          "CompositeQuestion": "#/$defs/CompositeQuestion",
+          "ListQuestion": "#/$defs/ListQuestion",
+          "UserQuestion": "#/$defs/UserQuestion"
+        }
+      }
+    }
+  }
+}

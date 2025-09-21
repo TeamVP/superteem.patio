@@ -1,0 +1,34 @@
+{
+  "$id": "https://patio.superteem.com/schema/response.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Response",
+  "type": "object",
+  "required": [
+    "id",
+    "templateId",
+    "templateVersion",
+    "submitterId",
+    "createdAt",
+    "status",
+    "context",
+    "answers",
+    "payload"
+  ],
+  "properties": {
+    "id": { "type": "string" },
+    "templateId": { "type": "string" },
+    "templateVersion": { "type": "string" },
+    "submitterId": { "type": "string" },
+    "teamId": { "type": ["string", "null"] },
+    "createdAt": { "type": "string", "format": "date-time" },
+    "status": { "type": "string", "enum": ["draft", "submitted"] },
+    "context": { "$ref": "./submission-context.schema.json" },
+    "answers": {
+      "type": "object",
+      "patternProperties": { "^\\$[a-z0-9_]+$": {} },
+      "additionalProperties": true
+    },
+    "payload": {}
+  },
+  "additionalProperties": false
+}

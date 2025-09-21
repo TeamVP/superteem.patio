@@ -2,4 +2,6 @@
 . "$(dirname -- "$0")/_/husky.sh"
 
 echo "Running pre-commit hooks..."
-pnpm lint-staged
+pnpm lint-staged || exit 1
+echo "Typechecking..."
+pnpm typecheck || exit 1

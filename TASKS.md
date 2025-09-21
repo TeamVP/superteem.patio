@@ -5,30 +5,45 @@
 - [x] RQ-003: JSONLogic parser + migration CLI + unit tests for sample rules; structured failures & warnings. [file:7]
 - [x] RQ-004: Template Editor core (palette, selection, edit panel, enableIf warnings, reorder, validation). DnD + advanced panes pending. [file:7]
 - [x] RQ-005: JSON tab with AJV validation, diff summary, orphan variable blocking, confirm apply. Variable canonicalization & rich diff UI pending. [file:7]
-- [x] RQ-006: Runtime renderer core (answers map, reactive enableIf compile+eval, nested clearing). Pending: payload shaping & performance caching. [file:7]
-- [ ] RQ-007: Validation engine & UX (field + cross-field). Plan: [file:7]
+- [x] RQ-006: Runtime renderer core (answers map, reactive enableIf compile+eval, nested clearing, payload shaping). Pending: performance caching. [file:7]
+- [x] RQ-007: Validation engine & UX (field + cross-field). Plan: [file:7]
 	- [x] Add validation rule evaluator (reuse expression evaluator for custom rules)
 	- [x] Implement built-ins: length, numeric ranges, multi-choice min/max
 	- [x] Implement cross-field census >= bedside + hallway rule with shared error propagation
 	- [x] Add error state rendering in TemplateRenderer (inline + summary)
 	- [ ] Storybook stories for error states
+		- [x] Per-question built-in rule failures story
+		- [x] Cross-field census rule story
+		- [x] Summary + inline combined (TemplateRenderer) story
 	- [x] Vitest: unit tests for each rule + cross-field edge cases
-	- [ ] Wire into submission attempt (prevent submit when errors)
+	- [x] Wire into submission attempt (prevent submit when errors)
 - [ ] RQ-008: Connect Convex backend; create template, template_versions, and responses functions with server-side validation. [file:5]
 	- [x] Extend Convex schema (templates, templateVersions, responses)
 	- [x] Server validation utilities (shared build/run)
 	- [x] Template functions: createTemplate, publishVersion, getTemplate, getTemplateVersion, listTemplates
 	- [x] Response functions: saveDraft, submitResponse, listResponsesByTemplate
-	- [ ] Lint/format cleanup & switch to generated typed functions (after `npx convex dev`) 
+	- [x] Unify users/teams/memberships schema with templates & versions (convex/schema.ts)
+	- [x] Introduce auditLogs table & indexes
+	- [x] Implement publishTemplateVersion mutation (creates templateVersions row, updates templates.latestVersion, writes audit log)
+	- [x] Implement revertTemplateVersion mutation (copies snapshot body back to templates.body, writes audit log)
+	- [x] Implement saveTemplateDraft mutation (patch editable body + updatedAt)
+	- [x] Implement listTemplateVersions query (by templateId ordered desc)
+	- [x] Implement saveResponseDraft mutation (insert/update draft responses row)
+	- [x] Implement submitResponse mutation (validation pass, mark submittedAt, status=submitted, write audit log)
+	- [x] Server-side answer validation utility (convex/validation.ts) + unit tests
+	- [x] Structured error object (INVALID_RESPONSE with fieldErrors)
+	- [x] Implement listResponsesByTemplateVersion query (filter by version)
+	- [x] Implement logAudit helper (internal) & central action constants
+	- [x] Lint/format cleanup & switch to generated typed functions (after `npx convex dev`) 
 - [ ] RQ-009: Integrate Clerk RBAC; gate authoring, publishing, and responding by role and team scope. [file:5]
-	- [ ] Add roles field to users table (array)
-	- [ ] Backfill / migration script or temporary bootstrap logic
-	- [ ] requireRole helper (server/shared/auth.ts)
-	- [ ] Enforce roles in template functions
-	- [ ] Enforce roles in response functions
-	- [ ] Frontend gating (hide create/publish UI if unauthorized)
-	- [ ] Tests or manual checklist for each protected function
-	- [ ] Update docs (plan + README snippet)
+	- [x] Add roles field to users table (array)
+	- [x] Backfill / migration script or temporary bootstrap logic (bootstrapRoles mutation)
+	- [x] requireRole helper (server/shared/auth.ts)
+	- [x] Enforce roles in template functions
+	- [x] Enforce roles in response functions
+	- [x] Frontend gating (hide create/publish UI if unauthorized) (stub always true dev)
+	- [x] Tests or manual checklist for each protected function
+	- [x] Update docs (plan + README snippet)
  - [ ] RQ-008A: Development Auth Shim (local only) — provide Convex identity without Clerk for rapid iteration.
 	- [x] useDevAuth hook (VITE_DEV_AUTH switch, HS256 JWT via VITE_DEV_JWT_SECRET)
 	- [x] devJwt helper (getDevJwt)
@@ -38,25 +53,58 @@
 	- [x] Tests: enabled vs disabled states
 	- [ ] Env docs + pnpm dev:auth script docs
 	- [x] Ensure no server auth weakening (client-only)
-- [ ] RQ-010: Testing—Storybook stories for all question types and SIBR template; Vitest for rules; Playwright E2E for Yes/No paths. [file:7]
+- [ ] RQ-010: Testing—comprehensive coverage (stories + unit + E2E). [file:7]
+	- [x] Runtime visibility & clearing tests
+	- [x] Validation engine unit tests
+	- [x] TemplateRenderer fixture stories (3 example templates)
+	- [x] Validation & visibility scenario stories
+	- [ ] Stories: each question type error states
+	- [x] Cross-field validation story (census >= bedside + hallway)
+	- [x] Cross-field validation story (census >= bedside + hallway)
+	- [ ] Playwright: SIBR Yes path
+		- [x] Scaffold generic observation yes-path test (skipped)
+	- [ ] Playwright: SIBR No path
+	- [ ] Playwright: CSV export smoke
+	- [ ] Integrate Storybook test runner (snapshot critical states)
+	- [ ] Add coverage thresholds (post perf review)
 - [ ] RQ-011: Add analytics/exports for canonical answers with CSV/JSON downloads. [file:7]
 - [ ] RQ-012: Align UI components to theme system (RQ-001) using Tailwind/shadcn; dark/light toggle. [file:6]
 - [ ] RQ-013: Developer experience—pnpm scripts (validate, migrate), CI gating, and release automation. [image:1]
-- [ ] RQ-014: Audit logs and versioning; link responses to templateVersion and surface change history. [file:7]
-- [ ] RQ-015: Seed fixtures—import three templates under spec/examples/templates and wire to stories/tests. [file:7][file:3][file:8]
-- [ ] Create RQ-016: Implement review UI for clinicians to view submitted responses, with ability to add comments and mark as reviewed.
-- [ ] Create RQ-017: Deployment—set up hosting (Dokploy at Hostinger), domain, HTTPS, and environment variables for production.
-- [ ] Create RQ-018: User management—admin UI to manage users, roles, and team assignments within Clerk.
-- [ ] Create RQ-019: Notifications—email alerts for new responses and reminders for incomplete surveys.
-- [ ] Create RQ-020: Mobile optimization—ensure responsive design and usability on mobile devices for both template authoring and response submission.
-- [ ] Create RQ-021: Accessibility audit and improvements to meet WCAG standards.
-- [ ] Create RQ-022: Performance optimizations for large templates and complex enableIf logic.
-- [ ] Create RQ-023: Implement localization support for multiple languages in templates and responses.
-- [ ] Create RQ-024: Add Legals (Terms of Service) and Privacy Policy pages to comply with regulations.
-- [ ] Create RQ-025: Implement autosave drafts for in-progress responses to prevent data loss.
-- [ ] Create RQ-026: Add support for branching logic in templates to create dynamic survey flows.
-- [ ] Create RQ-027: Implement template publishing system so that templates can be shared between teams with permission controls.
-- [ ] Create RQ-028: Create analytics dashboard to visualize response data and trends over time.
-- [ ] Create RQ-029: Implement API endpoints for external systems to interact with templates and responses.
-- [ ] Add all the incomplete RQs to the project tasks.
+- [x] RQ-014: Audit logs and versioning; link responses to templateVersion and surface change history (publish, revert, submit, export actions logged). [file:7]
+- [ ] RQ-015: Seed fixtures—import three templates under spec/examples/templates and wire to stories/tests (add Convex seed + pnpm seed). [file:7][file:3][file:8]
+	- [x] Seed mutation `seeds:ensureExamples`
+	- [x] pnpm seed script
+	- [x] Runtime renderer stories using fixtures
+	- [ ] Full AJV template validation before insert
+	- [ ] Version bump / hash detection
+	- [ ] Storybook docs page referencing fixtures
+- [ ] RQ-016: Implement review UI for clinicians to view submitted responses, with ability to add comments and mark as reviewed.
+	- [x] Schema: add reviewStatus + reviewedAt + reviewedBy + responseReviews table
+	- [x] Index: by_template_reviewStatus (filter unreviewed quickly)
+	- [x] Mutation: setResponseReviewStatus (status transitions + audit log)
+	- [x] Mutation: addResponseReviewNote (append-only note, links actor)
+	- [x] Query: listReviewedResponses (filters: templateId, status)
+	- [x] Query: getResponseWithReviews (response + notes thread)
+	- [x] UI: Response list w/ filters & status badges
+	- [x] UI: Detail panel with answers + notes + status control
+	- [x] RBAC: restrict review actions to reviewer|admin roles
+	- [x] Tests: status transitions, forbidden access, audit entries
+	- [x] Storybook: response detail mock states (unreviewed, in_review, reviewed)
+	- [x] Docs: add section describing review workflow & audit mapping
+	- [x] Wiring: hooks + dashboard integration (initial, placeholder template id)
+- [ ] RQ-017: Deployment—set up hosting (Dokploy at Hostinger), domain, HTTPS, and environment variables for production.
+- [ ] RQ-018: User management—admin UI to manage users, roles, and team assignments within Clerk.
+- [ ] RQ-019: Notifications—email alerts for new responses and reminders for incomplete surveys.
+- [ ] RQ-020: Mobile optimization—ensure responsive design and usability on mobile devices for both template authoring and response submission.
+- [ ] RQ-021: Accessibility audit and improvements to meet WCAG standards.
+- [ ] RQ-022: Performance optimizations for large templates and complex enableIf logic.
+- [ ] RQ-023: Implement localization support for multiple languages in templates and responses.
+- [ ] RQ-024: Add Legals (Terms of Service) and Privacy Policy pages to comply with regulations.
+- [ ] RQ-025: Implement autosave drafts for in-progress responses to prevent data loss.
+- [ ] RQ-026: Add support for branching logic in templates to create dynamic survey flows.
+- [ ] RQ-027: Implement template publishing system so that templates can be shared between teams with permission controls.
+- [ ] RQ-028: Create analytics dashboard to visualize response data and trends over time.
+- [ ] RQ-029: Implement API endpoints for external systems to interact with templates and responses.
+- [ ] RQ-030: Add all the incomplete RQs to the project tasks.
+- [ ] RQ-031: Heavy test gating: conditionally run large/legacy tests with RUN_HEAVY env flag.
 

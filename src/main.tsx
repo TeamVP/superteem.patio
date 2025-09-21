@@ -7,21 +7,24 @@ import { ExportsPage } from './pages/ExportsPage';
 import '@/styles/globals.css';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { DevAuthProvider } from './devAuth/DevAuthProvider';
+import { ToastProvider } from '@/components/ToastProvider';
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     <DevAuthProvider>
-      <ErrorBoundary>
-        {globalThis.location?.pathname === '/exports' ? (
-          <ExportsPage />
-        ) : globalThis.location?.pathname === '/reviews' ? (
-          <TemplateSelector>
-            {(templateId) => <ReviewDashboard templateId={templateId} />}
-          </TemplateSelector>
-        ) : (
-          <Home />
-        )}
-      </ErrorBoundary>
+      <ToastProvider>
+        <ErrorBoundary>
+          {globalThis.location?.pathname === '/exports' ? (
+            <ExportsPage />
+          ) : globalThis.location?.pathname === '/reviews' ? (
+            <TemplateSelector>
+              {(templateId: string) => <ReviewDashboard templateId={templateId} />}
+            </TemplateSelector>
+          ) : (
+            <Home />
+          )}
+        </ErrorBoundary>
+      </ToastProvider>
     </DevAuthProvider>
   </React.StrictMode>
 );

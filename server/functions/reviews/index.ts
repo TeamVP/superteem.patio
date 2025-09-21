@@ -17,13 +17,15 @@ export function canTransition(from: ReviewStatus, to: ReviewStatus): boolean {
   return ti >= fi; // forward or same
 }
 
+// Legacy simple list (kept temporarily for backward compatibility; prefer listResponsesPaginated)
 export const listReviewedResponses = queryGeneric({
   args: { templateId: v.id('templates'), status: v.optional(v.string()) },
   handler: async ({ db }, args) => {
+    const status = args.status || 'unreviewed';
     const q = db
       .query('responses')
       .withIndex('by_template_reviewStatus', (idx: any) =>
-        idx.eq('templateId', args.templateId).eq('reviewStatus', args.status || 'unreviewed')
+        idx.eq('templateId', args.templateId).eq('reviewStatus', status)
       )
       .order('desc');
     const rows = await q.collect();
@@ -35,6 +37,57 @@ export const listReviewedResponses = queryGeneric({
       lastReviewedBy: r.lastReviewedBy,
       reviewNoteCount: r.reviewNoteCount || 0,
     }));
+  },
+});
+
+// Paginated list supporting optional status filter. Cursor = createdAt of last item from previous page.
+export const listResponsesPaginated = queryGeneric({
+  args: {
+    templateId: v.id('templates'),
+    status: v.optional(v.string()),
+    cursor: v.optional(v.number()), // createdAt value to fetch records before
+    limit: v.optional(v.number()),
+  },
+  handler: async ({ db }, args) => {
+    const limit = Math.min(Math.max(args.limit ?? 20, 1), 100);
+    const { status } = args;
+    let q: any;
+    if (status) {
+      // Use compound index (templateId, reviewStatus, createdAt)
+      q = db
+        .query('responses')
+        .withIndex('by_template_reviewStatus', (idx: any) =>
+          idx.eq('templateId', args.templateId).eq('reviewStatus', status)
+        )
+        .order('desc');
+      if (args.cursor) {
+        // createdAt descending: fetch items with createdAt < cursor
+        q = q.lt('createdAt', args.cursor);
+      }
+    } else {
+      // Fallback to (templateId, createdAt) index when no status filter
+      q = db
+        .query('responses')
+        .withIndex('by_template_created', (idx: any) => idx.eq('templateId', args.templateId))
+        .order('desc');
+      if (args.cursor) {
+        q = q.lt('createdAt', args.cursor);
+      }
+    }
+
+    const rows = await q.take(limit + 1); // request one extra to detect next page
+    const hasMore = rows.length > limit;
+    const slice = hasMore ? rows.slice(0, limit) : rows;
+    const items = slice.map((r: any) => ({
+      id: r._id,
+      createdAt: r.createdAt,
+      reviewStatus: r.reviewStatus || 'unreviewed',
+      lastReviewedAt: r.lastReviewedAt,
+      lastReviewedBy: r.lastReviewedBy,
+      reviewNoteCount: r.reviewNoteCount || 0,
+    }));
+    const nextCursor = hasMore ? slice[slice.length - 1].createdAt : null;
+    return { items, nextCursor, hasMore };
   },
 });
 

@@ -1,0 +1,55 @@
+[
+  {
+    "type": "MultipleChoiceQuestion",
+    "label": "This would be a good program to have on my unit:",
+    "note": null,
+    "required": true,
+    "variable": null,
+    "enableIf": null,
+    "customValidations": [],
+    "options": ["Strongly Disagree", "Disagree", "Agree", "Strongly Agree"],
+    "minimumResponses": 1,
+    "maximumResponses": 1
+  },
+  {
+    "type": "StringQuestion",
+    "label": "What are the benefits that you see coming from adopting this on the unit?",
+    "note": null,
+    "required": true,
+    "variable": null,
+    "enableIf": null,
+    "customValidations": [],
+    "lineType": 2,
+    "minimumLength": 1,
+    "maximumLength": 500
+  },
+  {
+    "type": "StringQuestion",
+    "label": "What concerns do you have about successfully implementing and sustaining this?",
+    "note": null,
+    "required": true,
+    "variable": null,
+    "enableIf": null,
+    "customValidations": [],
+    "lineType": 2,
+    "minimumLength": 1,
+    "maximumLength": 500
+  },
+  {
+    "type": "MultipleChoiceQuestion",
+    "label": "If your unit decided to trial this, when do you think you should commence implementation? ",
+    "note": null,
+    "required": true,
+    "variable": null,
+    "enableIf": null,
+    "customValidations": [],
+    "options": [
+      "Definitely not within the next 12 months",
+      "Within the next 6-12 months",
+      "Within the next 3-6 months",
+      "Ready now"
+    ],
+    "minimumResponses": 1,
+    "maximumResponses": 1
+  }
+]

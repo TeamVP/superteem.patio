@@ -1,16 +1,16 @@
-import { renderHook, act } from "@testing-library/react";
-import { useTheme } from "./useTheme";
+import { renderHook, act } from '@testing-library/react';
+import { useTheme } from './useTheme';
 
-describe("useTheme (RQ-001)", () => {
-  it("toggles between light and dark themes", () => {
+describe('useTheme (RQ-001)', () => {
+  it('toggles between light and dark themes', () => {
     const { result } = renderHook(() => useTheme());
 
-    expect(result.current.theme).toBe("light");
+    expect(result.current.theme).toBe('light');
 
     act(() => {
-      result.current.setTheme("dark");
+      result.current.setTheme('dark');
     });
 
-    expect(result.current.theme).toBe("dark");
+    expect(result.current.theme).toBe('dark');
   });
 });

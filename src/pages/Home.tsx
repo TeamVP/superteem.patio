@@ -1,10 +1,37 @@
-import React from 'react';
+import React, { useState } from 'react';
 import Button from '../components/Button';
 import { useTheme } from '../hooks/useTheme';
 import EnvironmentInfo from '../components/EnvironmentInfo';
+import { FormField } from '../components/FormField';
+import { NumberField } from '../components/NumberField';
 
 export default function Home() {
   const { theme, setTheme } = useTheme();
+  const [age, setAge] = useState('');
+  const [name, setName] = useState('');
+  const [errors, setErrors] = useState<{ age?: string; name?: string }>({});
+  const [submitted, setSubmitted] = useState(false);
+
+  function validate() {
+    const e: { age?: string; name?: string } = {};
+    const n = name.trim();
+    if (!n) e.name = 'Name is required';
+    const num = Number(age);
+    if (!age) e.age = 'Age required';
+    else if (Number.isNaN(num)) e.age = 'Age must be a number';
+    else if (num < 1 || num > 120) e.age = 'Age must be between 1 and 120';
+    setErrors(e);
+    return Object.keys(e).length === 0;
+  }
+
+  function handleSubmit(ev: React.FormEvent) {
+    ev.preventDefault();
+    if (validate()) {
+      setSubmitted(true);
+    } else {
+      setSubmitted(false);
+    }
+  }
 
   const checklist = [
     'See this page at http://localhost:3000',
@@ -45,6 +72,48 @@ export default function Home() {
           implementation with tests in <code>src</code> or <code>tests/</code>. Use the provided CI
           and release workflows to ensure consistency across environments.
         </p>
+        <p className="mt-3 text-sm">
+          Need data exports? Visit the{' '}
+          <a href="/exports" className="text-blue-600 underline">
+            Exports page
+          </a>
+          .
+        </p>
+      </section>
+      <section className="mt-10">
+        <h2 className="text-xl font-semibold">Demo Form Validation</h2>
+        <p className="text-sm mt-1 mb-4 text-gray-600 dark:text-gray-300">
+          Simple client-side validation example used by Playwright tests (invalid then valid
+          submission flow).
+        </p>
+        <form onSubmit={handleSubmit} noValidate className="max-w-sm">
+          <FormField label="Name" htmlFor="demo-name" error={errors.name ?? null}>
+            <input
+              id="demo-name"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              className={`border rounded px-2 py-1 w-full ${errors.name ? 'border-red-600' : 'border-gray-300'}`}
+              placeholder="Enter name"
+            />
+          </FormField>
+          <FormField label="Age" htmlFor="demo-age" error={errors.age ?? null}>
+            <NumberField
+              id="demo-age"
+              value={age}
+              onChange={setAge}
+              invalid={!!errors.age}
+              placeholder="e.g. 42"
+            />
+          </FormField>
+          <div className="flex gap-3 items-center mt-2">
+            <Button type="submit">Submit</Button>
+            {submitted && (
+              <span className="text-green-700 text-sm" role="status">
+                Submitted!
+              </span>
+            )}
+          </div>
+        </form>
       </section>
       <EnvironmentInfo />
       <section className="mt-8 text-xs text-gray-500 dark:text-gray-400">

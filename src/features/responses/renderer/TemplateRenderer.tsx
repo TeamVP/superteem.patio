@@ -27,6 +27,7 @@ interface TemplateRendererProps {
   initialAnswers?: Record<string, unknown>;
   onSubmit?: (answers: Record<string, unknown>, payload: unknown) => void;
   submitLabel?: string;
+  showDebug?: boolean; // show answers & payload panels
 }
 
 export function TemplateRenderer({
@@ -35,6 +36,7 @@ export function TemplateRenderer({
   initialAnswers,
   onSubmit,
   submitLabel = 'Submit',
+  showDebug = true,
 }: TemplateRendererProps) {
   const [answers, setAnswers] = useState<Record<string, unknown>>(initialAnswers || {});
   const [payload, setPayload] = useState<unknown>(null);
@@ -214,14 +216,16 @@ export function TemplateRenderer({
           </ul>
         </div>
       )}
-      <div className="grid grid-cols-2 gap-2">
-        <pre className="text-xs bg-gray-50 p-2 rounded font-mono overflow-auto">
-          {JSON.stringify(answers, null, 2)}
-        </pre>
-        <pre className="text-xs bg-gray-50 p-2 rounded font-mono overflow-auto">
-          {JSON.stringify(payload, null, 2)}
-        </pre>
-      </div>
+      {showDebug && (
+        <div className="grid grid-cols-2 gap-2">
+          <pre className="text-xs bg-gray-50 p-2 rounded font-mono overflow-auto">
+            {JSON.stringify(answers, null, 2)}
+          </pre>
+          <pre className="text-xs bg-gray-50 p-2 rounded font-mono overflow-auto">
+            {JSON.stringify(payload, null, 2)}
+          </pre>
+        </div>
+      )}
       {onSubmit && (
         <div>
           <button
@@ -283,12 +287,13 @@ function QuestionNode({
   visibility: visibilityMap,
 }: QuestionNodeProps) {
   if (!visible) return null;
-  switch (q.type) {
+  const qt = q.type as string; // allow legacy/extended types gracefully
+  switch (qt) {
     case 'CompositeQuestion':
       return (
         <div className="space-y-2 border rounded p-2">
           <div className="text-sm font-semibold">{q.label}</div>
-          {(q.questions || []).map((child) => (
+          {((q as CompositeQuestion).questions || []).map((child: Question) => (
             <QuestionNode
               key={child.id}
               q={child}
@@ -310,12 +315,15 @@ function QuestionNode({
         <div className="space-y-2 border rounded p-2">
           <div className="text-sm font-semibold">{q.label}</div>
           <QuestionNode
-            q={q.question}
-            visible={visibilityMap[q.question.id || ''] !== false}
+            q={(q as ListQuestion).question}
+            visible={visibilityMap[(q as ListQuestion).question.id || ''] !== false}
             answerValue={answerValue}
             onChange={onChange}
             visibility={visibilityMap}
           />
+          <div className="text-xs text-gray-500 dark:text-gray-400">
+            Multiple entries not yet supported – capturing a single item.
+          </div>
         </div>
       );
     case 'StringQuestion':
@@ -326,7 +334,11 @@ function QuestionNode({
           </label>
           <input
             id={q.id!}
-            className={`border rounded px-2 py-1 text-sm ${errors?.length ? 'border-red-500' : ''}`}
+            className={`border rounded px-2 py-1 text-sm w-full bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
+              errors?.length
+                ? 'border-red-500 focus:ring-red-500 focus:border-red-500'
+                : 'border-gray-300 dark:border-gray-600'
+            }`}
             value={(answerValue as string) || ''}
             onChange={(e) => onChange(q, e.target.value)}
           />
@@ -346,7 +358,11 @@ function QuestionNode({
           <input
             type="number"
             id={q.id!}
-            className={`border rounded px-2 py-1 text-sm ${errors?.length ? 'border-red-500' : ''}`}
+            className={`border rounded px-2 py-1 text-sm w-full bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
+              errors?.length
+                ? 'border-red-500 focus:ring-red-500 focus:border-red-500'
+                : 'border-gray-300 dark:border-gray-600'
+            }`}
             value={(answerValue as number | undefined) ?? ''}
             onChange={(e) => onChange(q, e.target.value ? Number(e.target.value) : null)}
           />
@@ -362,20 +378,26 @@ function QuestionNode({
         <div className="space-y-1">
           <div className="text-sm font-medium">{q.label}</div>
           <div className="flex flex-wrap gap-2">
-            {(q.options || []).map((opt) => {
+            {(
+              q as unknown as import('../../../types/template').MultipleChoiceQuestion
+            ).options?.map((opt: string) => {
               const arr = (answerValue as string[]) || [];
               const checked = arr.includes(opt);
               return (
-                <label key={opt} className="text-xs flex items-center gap-1">
+                <label
+                  key={opt}
+                  className="flex items-center gap-1 text-xs px-2 py-1 rounded border cursor-pointer bg-gray-50 dark:bg-gray-800 border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700"
+                >
                   <input
                     type="checkbox"
+                    className="accent-blue-600"
                     checked={checked}
                     onChange={() => {
                       const next = checked ? arr.filter((x) => x !== opt) : [...arr, opt];
                       onChange(q, next);
                     }}
                   />
-                  {opt}
+                  <span className="text-gray-700 dark:text-gray-200">{opt}</span>
                 </label>
               );
             })}
@@ -387,10 +409,37 @@ function QuestionNode({
           ))}
         </div>
       );
+    case 'UserQuestion':
+      return (
+        <div className="space-y-1">
+          <label className="text-sm font-medium" htmlFor={q.id!}>
+            {q.label || 'User'}
+          </label>
+          <input
+            id={q.id!}
+            placeholder="Enter user identifier"
+            className={`border rounded px-2 py-1 text-sm w-full bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
+              errors?.length
+                ? 'border-red-500 focus:ring-red-500 focus:border-red-500'
+                : 'border-gray-300 dark:border-gray-600'
+            }`}
+            value={(answerValue as string) || ''}
+            onChange={(e) => onChange(q, e.target.value)}
+          />
+          <div className="text-xs text-gray-500 dark:text-gray-400">
+            Future: replace with user picker (job type filter aware).
+          </div>
+          {errors?.map((err) => (
+            <div key={err} className="text-xs text-red-600">
+              {err}
+            </div>
+          ))}
+        </div>
+      );
     default:
       return (
         <div className="text-sm text-gray-500">
-          Unsupported question type: <code>{q.type}</code>
+          Unsupported question type: <code>{qt}</code>
         </div>
       );
   }

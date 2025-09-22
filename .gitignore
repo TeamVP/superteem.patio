@@ -68,3 +68,6 @@ build/
 # Dokploy files
 dokploy
 
+# pnpm local content-addressable store (should not be committed)
+.pnpm-store/
+

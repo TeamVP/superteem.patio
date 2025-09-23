@@ -164,6 +164,50 @@ export const listReviewedResponses = query({
   },
 });
 
+// Paginated list with optional status filter. Cursor uses createdAt of last item.
+export const listResponsesPaginated = query({
+  args: {
+    templateId: v.id('templates'),
+    status: v.optional(v.string()),
+    cursor: v.optional(v.number()),
+    limit: v.optional(v.number()),
+  },
+  handler: async (ctx, { templateId, status, cursor, limit }) => {
+    await assertTemplateRole(ctx, templateId, ['admin', 'reviewer', 'publisher', 'editor']);
+    const pageSize = Math.min(Math.max(limit ?? 25, 1), 100);
+    let q: any;
+    if (status) {
+      const s = ensureStatus(status);
+      q = ctx.db
+        .query('responses')
+        .withIndex('by_template_reviewStatus', (idx: any) =>
+          idx.eq('templateId', templateId).eq('reviewStatus', s)
+        )
+        .order('desc');
+      if (cursor) q = q.lt('createdAt', cursor);
+    } else {
+      q = ctx.db
+        .query('responses')
+        .withIndex('by_template_created', (idx: any) => idx.eq('templateId', templateId))
+        .order('desc');
+      if (cursor) q = q.lt('createdAt', cursor);
+    }
+    const rows = await q.take(pageSize + 1);
+    const hasMore = rows.length > pageSize;
+    const slice = hasMore ? rows.slice(0, pageSize) : rows;
+    const items = slice.map((r: Doc<'responses'>) => ({
+      id: r._id,
+      createdAt: r.createdAt,
+      reviewStatus: (r.reviewStatus as ReviewStatus) || 'unreviewed',
+      lastReviewedAt: r.lastReviewedAt,
+      lastReviewedBy: r.lastReviewedBy,
+      reviewNoteCount: r.reviewNoteCount || 0,
+    }));
+    const nextCursor = hasMore ? slice[slice.length - 1].createdAt : null;
+    return { items, nextCursor, hasMore };
+  },
+});
+
 export const getResponseWithReviews = query({
   args: { responseId: v.id('responses') },
   handler: async (ctx, { responseId }) => {

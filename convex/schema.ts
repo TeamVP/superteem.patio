@@ -87,13 +87,16 @@ export default defineSchema({
     createdAt: v.number(),
     updatedAt: v.number(),
     submittedAt: v.optional(v.number()),
-    reviewStatus: v.optional(v.string()),
+    // RQ-016 review denormalized fields
+    reviewStatus: v.optional(v.string()), // unreviewed | in_review | reviewed
     lastReviewedAt: v.optional(v.number()),
     lastReviewedBy: v.optional(v.id('users')),
     reviewNoteCount: v.optional(v.number()),
   })
     .index('by_template_version', ['templateId', 'templateVersion'])
     .index('by_submitter', ['submitterId'])
+    .index('by_submitter_updated', ['submitterId', 'updatedAt'])
+    .index('by_submitter_submitted', ['submitterId', 'submittedAt'])
     .index('by_team', ['teamId'])
     .index('by_template_created', ['templateId', 'createdAt'])
     .index('by_template_reviewStatus', ['templateId', 'reviewStatus', 'createdAt']),
@@ -103,7 +106,7 @@ export default defineSchema({
     createdAt: v.number(),
     createdBy: v.optional(v.id('users')),
     note: v.optional(v.string()),
-    statusAfter: v.optional(v.string()),
+    statusAfter: v.optional(v.string()), // unreviewed | in_review | reviewed
   }).index('by_response', ['responseId', 'createdAt']),
 
   auditLogs: defineTable({

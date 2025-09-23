@@ -1,15 +1,45 @@
 import { defineSchema, defineTable } from 'convex/server';
 import { v } from 'convex/values';
 
-// RQ-008: Backend persistence for templates, versions, and responses
+// Expanded schema to support respondent flow (RQ-017) + teams + auth integration
 export default defineSchema({
   users: defineTable({
-    name: v.string(),
-    email: v.string(),
+    // External identity linkage
+    clerkId: v.optional(v.string()),
+    tokenIdentifier: v.optional(v.string()),
+    // Profile
+    email: v.optional(v.string()),
+    name: v.optional(v.string()),
+    imageUrl: v.optional(v.string()),
+    // Authorization
+    roles: v.array(v.string()), // global roles
+    teamIds: v.optional(v.array(v.id('teams'))),
+    status: v.string(), // active | disabled
+    // Lifecycle
     createdAt: v.number(),
-    // RQ-009: RBAC roles assigned to user (e.g. admin, author, reviewer, responder)
-    roles: v.array(v.string()),
-  }).index('by_email', ['email']),
+    lastSeenAt: v.number(),
+  })
+    .index('by_email', ['email'])
+    .index('by_clerkId', ['clerkId'])
+    .index('by_tokenIdentifier', ['tokenIdentifier']),
+  teams: defineTable({
+    slug: v.string(),
+    name: v.string(),
+    status: v.string(),
+    createdBy: v.optional(v.id('users')),
+    createdAt: v.number(),
+  }).index('by_slug', ['slug']),
+  users_teams: defineTable({
+    userId: v.id('users'),
+    teamId: v.id('teams'),
+    roles: v.array(v.string()), // team-scoped roles
+    joinedAt: v.number(),
+    invitedBy: v.optional(v.id('users')),
+    status: v.string(),
+  })
+    .index('by_user_team', ['userId', 'teamId'])
+    .index('by_team', ['teamId'])
+    .index('by_user', ['userId']),
   templates: defineTable({
     name: v.string(),
     type: v.string(), // survey | observation | other categories

@@ -24,13 +24,15 @@ export function useResponseList(templateId: Id<'templates'> | null, status?: str
     }
   }, [templateId, status, internalStatus]);
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const fn = templateId ? (api.reviews as any).listResponsesPaginated : DISABLED;
-  const args = templateId
-    ? { templateId, status: internalStatus, cursor: cursor ?? undefined, limit: 25 }
-    : undefined;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const page = useQuery(fn, args as any);
+  const args =
+    templateId !== null
+      ? { templateId, status: internalStatus, cursor: cursor ?? undefined, limit: 25 }
+      : undefined;
+  const page = useQuery(
+    templateId ? api.reviews.listResponsesPaginated : DISABLED,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    args as any
+  );
   const isLoading = !!templateId && page === undefined && responses.length === 0;
   const isLoadingMore = !!templateId && page === undefined && responses.length > 0;
 

@@ -15,6 +15,7 @@ import type {
 } from "convex/server";
 import type * as audit from "../audit.js";
 import type * as http from "../http.js";
+import type * as migrations from "../migrations.js";
 import type * as rbac from "../rbac.js";
 import type * as responses from "../responses.js";
 import type * as reviews from "../reviews.js";
@@ -34,6 +35,7 @@ import type * as validation from "../validation.js";
 declare const fullApi: ApiFromModules<{
   audit: typeof audit;
   http: typeof http;
+  migrations: typeof migrations;
   rbac: typeof rbac;
   responses: typeof responses;
   reviews: typeof reviews;

@@ -111,7 +111,7 @@ describe('server validateAnswers', () => {
     };
     expect(validateAnswers([mc], { $m: ['a'] }).ok).toBe(true);
     expect(validateAnswers([mc], { $m: [] }).ok).toBe(false);
-  expect(validateAnswers([mc], { $m: ['a', 'b', 'c'] }).ok).toBe(false);
+    expect(validateAnswers([mc], { $m: ['a', 'b', 'c'] }).ok).toBe(false);
   });
 
   it('list answers length', () => {
@@ -128,8 +128,8 @@ describe('server validateAnswers', () => {
       minimumAnswers: 1,
       maximumAnswers: 2,
     };
-  expect(validateAnswers([list], { $list: ['x'] }).ok).toBe(true);
+    expect(validateAnswers([list], { $list: ['x'] }).ok).toBe(true);
     expect(validateAnswers([list], { $list: [] }).ok).toBe(false);
-  expect(validateAnswers([list], { $list: ['a', 'b', 'c'] }).ok).toBe(false);
+    expect(validateAnswers([list], { $list: ['a', 'b', 'c'] }).ok).toBe(false);
   });
 });

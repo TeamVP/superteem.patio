@@ -57,3 +57,31 @@ export function useListResponsesByTemplateVersion(
     templateId ? { templateId, version } : 'skip'
   );
 }
+
+// Respondent-specific hooks
+export function useRespondentTemplates() {
+  return useQuery(api.templates.listForRespondent, {});
+}
+export function useResponseDraft(templateId: Id<'templates'> | undefined) {
+  return useQuery(api.responses.getDraft, templateId ? { templateId } : 'skip');
+}
+
+// Published template by slug (includes body + latest version)
+export function useTemplateBySlug(slug: string | undefined) {
+  return useQuery(api.templates.getBySlug, slug ? { slug } : 'skip');
+}
+
+export function usePublishedTemplatesPublic() {
+  return useQuery(api.templates.listPublishedGlobal, {});
+}
+
+export function useMyDraftTemplates() {
+  return useQuery(api.templates.listMyDraftTemplates, {});
+}
+
+export function useSlugAvailability(slug: string | undefined) {
+  const s = (slug || '').trim();
+  const result = useQuery(api.templates.slugAvailable, s ? { slug: s } : 'skip');
+  if (!s) return { available: undefined } as { available: boolean | undefined };
+  return (result as { available: boolean }) || { available: undefined };
+}

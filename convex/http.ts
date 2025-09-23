@@ -1,24 +1,38 @@
-import { httpRouter } from "convex/server";
-import { httpAction, internalMutation } from "./_generated/server";
-import { internal } from "./_generated/api";
-import { v } from "convex/values";
-import type { WebhookEvent } from "@clerk/backend";
-import { Webhook } from "svix";
+/* eslint-env node */
+import { httpRouter } from 'convex/server';
+import { httpAction, internalMutation } from './_generated/server';
+import { internal } from './_generated/api';
+import { v } from 'convex/values';
+import type { WebhookEvent } from '@clerk/backend';
+import { Webhook } from 'svix';
+
+type ClerkWebhookUser = {
+  id: string;
+  email_addresses?: { id: string; email_address: string }[];
+  primary_email_address_id?: string;
+  first_name?: string;
+  last_name?: string;
+  image_url?: string;
+};
 
 // Internal mutation to upsert from raw Clerk data
 export const upsertFromClerk = internalMutation({
   args: { data: v.any() },
   handler: async (ctx, { data }) => {
-    const clerkId: string = data.id;
-    const email = (data.email_addresses?.find((e: any) => e.id === data.primary_email_address_id)?.email_address) ?? undefined;
-    const name = [data.first_name, data.last_name].filter(Boolean).join(" ") || undefined;
-    const imageUrl = data.image_url ?? undefined;
+    const user = data as ClerkWebhookUser;
+    const clerkId: string = user.id;
+    const email = user.email_addresses?.find((e) => e.id === user.primary_email_address_id)?.email_address ?? undefined;
+    const name = [user.first_name, user.last_name].filter(Boolean).join(" ") || undefined;
+    const imageUrl = user.image_url ?? undefined;
 
     // tokenIdentifier may not be present in webhook payload; synthesize issuer+subject if you standardize issuer
     const tokenIdentifier = `clerk|${clerkId}`;
 
     const now = Date.now();
-    const existing = await ctx.db.query("users").withIndex("by_clerkId", q => q.eq("clerkId", clerkId)).first();
+    const existing = await ctx.db
+      .query('users')
+      .withIndex('by_clerkId', (q) => q.eq('clerkId', clerkId))
+      .first();
 
     if (existing) {
       await ctx.db.patch(existing._id, {
@@ -46,6 +60,17 @@ export const upsertFromClerk = internalMutation({
   },
 });
 
+export const disableUserByClerkId = internalMutation({
+  args: { clerkId: v.string() },
+  handler: async (ctx, { clerkId }) => {
+    const existing = await ctx.db
+      .query('users')
+      .withIndex('by_clerkId', (q) => q.eq('clerkId', clerkId))
+      .first();
+    if (existing) await ctx.db.patch(existing._id, { status: "disabled" });
+  },
+});
+
 // HTTP router
 const http = httpRouter();
 
@@ -59,13 +84,12 @@ http.route({
     switch (event.type) {
       case "user.created":
       case "user.updated": {
-  await ctx.runMutation(internal.http.upsertFromClerk, { data: event.data });
+        await ctx.runMutation(internal.http.upsertFromClerk, { data: event.data });
         break;
       }
       case "user.deleted": {
         const clerkId = (event.data as any).id as string;
-        const existing = await ctx.db.query("users").withIndex("by_clerkId", q => q.eq("clerkId", clerkId)).first();
-        if (existing) await ctx.db.patch(existing._id, { status: "disabled" });
+        await ctx.runMutation(internal.http.disableUserByClerkId, { clerkId });
         break;
       }
       default:

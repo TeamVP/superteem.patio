@@ -1,5 +1,7 @@
+// prettier-ignore
 import React, { useState, useEffect, createContext, useContext } from 'react';
 import { ConvexReactClient, ConvexProvider } from 'convex/react';
+import { consumePostAuthRedirect } from '@/auth/postAuthRedirect';
 
 const convexUrl = import.meta.env.VITE_CONVEX_URL as string;
 const convexClient = new ConvexReactClient(convexUrl);
@@ -9,7 +11,6 @@ interface RoleContextValue {
   role: Role;
   setRole: (r: Role) => void;
 }
-// Fallback minimal Storage typing for environments where lib.dom not active.
 interface LocalStorageLike {
   getItem(key: string): string | null;
   setItem(key: string, value: string): void;
@@ -44,10 +45,27 @@ export const DevAuthProvider: React.FC<React.PropsWithChildren> = ({ children })
       }
     }
   }, [role]);
+  useEffect(() => {
+    const redirect = consumePostAuthRedirect();
+    if (redirect) {
+      globalThis.location.replace(redirect);
+    }
+  }, []);
   return (
     <ConvexProvider client={convexClient}>
       <RoleContext.Provider value={{ role, setRole }}>{children}</RoleContext.Provider>
     </ConvexProvider>
   );
 };
+
+export {};
+
+
+
+
+
+
+
+
+
 

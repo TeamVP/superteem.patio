@@ -75,6 +75,8 @@
 	- [x] Seed mutation `seeds:ensureExamples`
 	- [x] pnpm seed script
 	- [x] Runtime renderer stories using fixtures
+	- [x] Added `seedExamples` mutation (three spec examples + two minimal quick templates published)
+	- [x] Extended seedExamples to ingest full JSON body for interdisciplinary-care-survey
 	- [ ] Full AJV template validation before insert
 	- [ ] Version bump / hash detection
 	- [ ] Storybook docs page referencing fixtures
@@ -92,18 +94,56 @@
 	- [x] Storybook: response detail mock states (unreviewed, in_review, reviewed)
 	- [x] Docs: add section describing review workflow & audit mapping
 	- [x] Wiring: hooks + dashboard integration (initial, placeholder template id)
+	- [x] Template selector (dynamic templateId removal)
+	- [x] Demo data seeding action (varied statuses + notes)
+	- [x] Role switcher (dev-only) via DevAuthProvider
+	- [x] Pagination query (listResponsesPaginated) + hook accumulation
+	- [x] Load more UI + skeleton loaders + empty states
+	- [x] Toast notifications for mutation errors
+	- [x] Extended documentation (pagination, seeding, selector, role switcher)
+	- [ ] Post-test: server-enforced team scoping & reviewer assignment
+	- [ ] Post-test: advanced filters (date range, submitter, note presence)
+	- [ ] Post-test: export reviewed subset
+	- [ ] Post-test: search within notes
 - [ ] RQ-017: Deployment—set up hosting (Dokploy at Hostinger), domain, HTTPS, and environment variables for production.
+ - [x] RQ-017: Respondent login & submission flow (Clerk + list + draft + submit)
+	 - [x] users.upsertFromClerk mutation
+	 - [x] Conditional ClerkProvider / DevAuthProvider wiring
+	 - [x] listForRespondent published templates query
+	 - [x] responses.getDraft query
+	 - [x] Env typings for VITE_CLERK_PUBLISHABLE_KEY
+	 - [x] Initial seed script `pnpm seed:initial` (team + demo template)
+	 - [x] Dedicated sign-in & sign-up pages wired (`/sign-in`, `/sign-up`) with post-auth redirect consumption
+	 - [x] Respondent UI pages (dedicated list + form with String/Integer/MultipleChoice widgets + autosave)
+	 - [x] Submission success UX & redirect/thanks screen
+	 - [ ] Additional template fixtures published for respondent testing
 - [ ] RQ-018: User management—admin UI to manage users, roles, and team assignments within Clerk.
 - [ ] RQ-019: Notifications—email alerts for new responses and reminders for incomplete surveys.
 - [ ] RQ-020: Mobile optimization—ensure responsive design and usability on mobile devices for both template authoring and response submission.
 - [ ] RQ-021: Accessibility audit and improvements to meet WCAG standards.
 - [ ] RQ-022: Performance optimizations for large templates and complex enableIf logic.
 - [ ] RQ-023: Implement localization support for multiple languages in templates and responses.
-- [ ] RQ-024: Add Legals (Terms of Service) and Privacy Policy pages to comply with regulations.
+- [x] RQ-024: Add Legals (Terms of Service) and Privacy Policy pages (basic placeholder content; future enhancement: jurisdiction-specific clauses, last-updated metadata, link from footer & auth flows).
+ - [x] RQ-024A: Published Templates viewer & detail pages
+	 - [x] getBySlug query (Convex)
+	 - [x] useTemplateBySlug hook
+	 - [x] /templates list route (PublishedTemplatesPage)
+	 - [x] /templates/:slug detail route (TemplateDetailPage with question summary + raw JSON toggle)
+	 - [x] Regression test (PublishedTemplatesPage.test verifies rendering with mocked query)
 - [ ] RQ-025: Implement autosave drafts for in-progress responses to prevent data loss.
 - [ ] RQ-026: Add support for branching logic in templates to create dynamic survey flows.
 - [ ] RQ-027: Implement template publishing system so that templates can be shared between teams with permission controls.
 - [ ] RQ-028: Create analytics dashboard to visualize response data and trends over time.
+	- [x] MVP Admin Analytics page listing collected `data-analytics` identifiers (role gated via Clerk admin/dev role heuristic)
+	- [x] Analytics ID collection utility (`collectAnalyticsIds`) environment-safe
+	- [x] Footer instrumentation + Home hero CTA markers
+	- [x] Basic access gating tests
+	- [ ] Event capture & batching pipeline (planned)
+	- [ ] Visualization (charts, filtering, export)
+	- [ ] Role refinement (server-enforced RBAC, removal of heuristic)
+	- [ ] PII review & data minimization guidelines doc
+	- [ ] Metrics taxonomy documentation
+	- [ ] Client perf impact assessment
 - [ ] RQ-029: Implement API endpoints for external systems to interact with templates and responses.
 - [ ] RQ-030: Add all the incomplete RQs to the project tasks.
 - [ ] RQ-031: Heavy test gating: conditionally run large/legacy tests with RUN_HEAVY env flag.

@@ -1,6 +1,7 @@
 import { mutation, query } from './_generated/server';
 import { v } from 'convex/values';
 import { validateAnswers, Question } from './validation';
+import type { Id } from './_generated/dataModel';
 
 // saveResponseDraft: upsert draft for submitter & template
 export const saveResponseDraft = mutation({
@@ -114,4 +115,120 @@ export const listResponsesByTemplateVersion = query({
     return list.filter((r) => r.status === 'submitted');
   },
 });
+
+export const getDraft = query({
+  args: { templateId: v.id('templates') },
+  handler: async (ctx, { templateId }) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) return null;
+    const viewer = await ctx.db
+      .query('users')
+      .withIndex('by_tokenIdentifier', (q) => q.eq('tokenIdentifier', identity.tokenIdentifier))
+      .first();
+    if (!viewer) return null;
+    const drafts = await ctx.db
+      .query('responses')
+      .withIndex('by_template_version', (q) => q.eq('templateId', templateId))
+      .collect();
+    return drafts.find((r) => r.submitterId === viewer._id && r.status === 'draft') || null;
+  },
+});
+
+// listDraftsForUser: recent drafts sorted by updatedAt desc
+export const listDraftsForUser = query({
+  args: {},
+  handler: async (ctx) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) return [] as DraftSummary[];
+    const viewer = await ctx.db
+      .query('users')
+      .withIndex('by_tokenIdentifier', (q) => q.eq('tokenIdentifier', identity.tokenIdentifier))
+      .first();
+    if (!viewer) return [] as DraftSummary[];
+    const drafts = await ctx.db
+      .query('responses')
+      .withIndex('by_submitter_updated', (q) => q.eq('submitterId', viewer._id))
+      .collect();
+    const filtered = drafts
+      .filter((r) => r.status === 'draft')
+      .sort((a, b) => b.updatedAt - a.updatedAt)
+      .slice(0, 25);
+    const cache = new Map<string, string>();
+    const out: DraftSummary[] = [];
+    for (const d of filtered) {
+      const key = d.templateId as unknown as string;
+      let title = cache.get(key);
+      if (!title) {
+        const t = await ctx.db.get(d.templateId);
+        if (t?.title) {
+          title = t.title;
+          cache.set(key, title);
+        }
+      }
+      out.push({
+        _id: d._id,
+        templateId: d.templateId,
+        updatedAt: d.updatedAt,
+        templateTitle: title,
+      });
+    }
+    return out;
+  },
+});
+
+// listRecentSubmissionsForUser: last 5 submitted responses desc by submittedAt
+export const listRecentSubmissionsForUser = query({
+  args: {},
+  handler: async (ctx) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) return [] as SubmissionSummary[];
+    const viewer = await ctx.db
+      .query('users')
+      .withIndex('by_tokenIdentifier', (q) => q.eq('tokenIdentifier', identity.tokenIdentifier))
+      .first();
+    if (!viewer) return [] as SubmissionSummary[];
+    const submitted = await ctx.db
+      .query('responses')
+      .withIndex('by_submitter_submitted', (q) => q.eq('submitterId', viewer._id))
+      .collect();
+    const filtered = submitted
+      .filter((r) => r.status === 'submitted' && r.submittedAt)
+      .sort((a, b) => b.submittedAt! - a.submittedAt!)
+      .slice(0, 5);
+    const cache = new Map<string, string>();
+    const out: SubmissionSummary[] = [];
+    for (const r of filtered) {
+      const key = r.templateId as unknown as string;
+      let title = cache.get(key);
+      if (!title) {
+        const t = await ctx.db.get(r.templateId);
+        if (t?.title) {
+          title = t.title;
+          cache.set(key, title);
+        }
+      }
+      out.push({
+        _id: r._id,
+        templateId: r.templateId,
+        submittedAt: r.submittedAt!,
+        templateTitle: title,
+      });
+    }
+    return out;
+  },
+});
+
+interface DraftSummary {
+  _id: Id<'responses'>;
+  templateId: Id<'templates'>;
+  updatedAt: number;
+  templateTitle?: string;
+}
+
+interface SubmissionSummary {
+  _id: Id<'responses'>;
+  templateId: Id<'templates'>;
+  submittedAt: number;
+  templateTitle?: string;
+}
 

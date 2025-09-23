@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { Template, Question } from '../types/template';
+import { Template, Question, CompositeQuestion, ListQuestion } from '../types/template';
 import { FormField } from './FormField';
 import { NumberField } from './NumberField';
 
@@ -31,7 +31,16 @@ export function TemplateRenderer({
     onChange?.(next);
   }
 
-  const flatQuestions: Question[] = template.body;
+  function expand(qs: Question[]): Question[] {
+    const out: Question[] = [];
+    for (const q of qs) {
+      out.push(q);
+      if (q.type === 'CompositeQuestion') out.push(...expand((q as CompositeQuestion).questions));
+      if (q.type === 'ListQuestion') out.push((q as ListQuestion).question);
+    }
+    return out;
+  }
+  const flatQuestions: Question[] = expand(template.body);
   const summaryItems = Object.entries(errors)
     .flatMap(([id, msgs]) => msgs.map((m) => ({ id, m })))
     .slice(0, 50); // guard
@@ -50,48 +59,94 @@ export function TemplateRenderer({
       )}
       {flatQuestions.map((q) => {
         const errorList = errors[q.id || ''] || [];
-        switch (q.type) {
-          case 'IntegerQuestion':
-            return (
-              <FormField
-                key={q.id}
-                label={q.label || q.id || 'Integer'}
-                htmlFor={q.id || ''}
-                error={errorList[0] || null}
-              >
-                <NumberField
-                  id={q.id || ''}
-                  value={(answers[q.id || ''] as string) || ''}
-                  onChange={(v) => update(q.id || '', v === '' ? undefined : parseInt(v, 10))}
-                  invalid={errorList.length > 0}
-                />
-              </FormField>
-            );
-          case 'StringQuestion':
-            return (
-              <FormField
-                key={q.id}
-                label={q.label || q.id || 'Text'}
-                htmlFor={q.id || ''}
-                error={errorList[0] || null}
-              >
-                <input
-                  id={q.id || ''}
-                  className={`border rounded px-2 py-1 w-full ${
-                    errorList.length ? 'border-red-600' : 'border-gray-300'
-                  }`}
-                  value={(answers[q.id || ''] as string) || ''}
-                  onChange={(e) => update(q.id || '', e.target.value)}
-                />
-              </FormField>
-            );
-          default:
-            return (
-              <div key={q.id} className="text-sm text-gray-500">
-                Unsupported question type: {q.type}
-              </div>
-            );
+        const commonFieldProps = {
+          htmlFor: q.id || '',
+          error: errorList[0] || null,
+        } as const;
+        if (q.type === 'IntegerQuestion') {
+          return (
+            <FormField key={q.id} {...commonFieldProps} label={q.label || q.id || 'Integer'}>
+              <NumberField
+                id={q.id || ''}
+                value={(answers[q.id || ''] as string) || ''}
+                onChange={(v) => update(q.id || '', v === '' ? undefined : parseInt(v, 10))}
+                invalid={errorList.length > 0}
+              />
+            </FormField>
+          );
         }
+        if (q.type === 'StringQuestion') {
+          return (
+            <FormField key={q.id} {...commonFieldProps} label={q.label || q.id || 'Text'}>
+              <input
+                id={q.id || ''}
+                className={`border rounded px-2 py-1 w-full bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
+                  errorList.length
+                    ? 'border-red-600 focus:ring-red-500 focus:border-red-500'
+                    : 'border-gray-300 dark:border-gray-600'
+                }`}
+                value={(answers[q.id || ''] as string) || ''}
+                onChange={(e) => update(q.id || '', e.target.value)}
+              />
+            </FormField>
+          );
+        }
+        if (q.type === 'MultipleChoiceQuestion') {
+          const current = (answers[q.id || ''] as string[]) || [];
+          return (
+            <FormField key={q.id} {...commonFieldProps} label={q.label || q.id || 'Choices'}>
+              <div className="flex flex-wrap gap-2">
+                {(q.options || []).map((opt) => {
+                  const checked = current.includes(opt);
+                  return (
+                    <label
+                      key={opt}
+                      className="flex items-center gap-1 text-xs px-2 py-1 rounded border cursor-pointer bg-gray-50 dark:bg-gray-800 border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700"
+                    >
+                      <input
+                        type="checkbox"
+                        className="accent-blue-600"
+                        checked={checked}
+                        onChange={() => {
+                          const next = checked
+                            ? current.filter((x) => x !== opt)
+                            : [...current, opt];
+                          update(q.id || '', next);
+                        }}
+                      />
+                      <span className="text-gray-700 dark:text-gray-200">{opt}</span>
+                    </label>
+                  );
+                })}
+              </div>
+              {errorList.length > 0 && (
+                <p className="text-xs text-red-600 mt-1" role="alert">
+                  {errorList[0]}
+                </p>
+              )}
+            </FormField>
+          );
+        }
+        if (q.type === 'CompositeQuestion') {
+          return (
+            <div key={q.id} className="border rounded p-3 space-y-3 bg-gray-50 dark:bg-gray-800">
+              <div className="text-sm font-semibold text-gray-800 dark:text-gray-200">
+                {q.label || q.id}
+              </div>
+            </div>
+          );
+        }
+        if (q.type === 'ListQuestion') {
+          return (
+            <div key={q.id} className="border rounded p-3 space-y-2 bg-gray-50 dark:bg-gray-800">
+              <div className="text-sm font-semibold text-gray-800 dark:text-gray-200">
+                {q.label || q.id}
+              </div>
+              <div className="text-xs text-gray-500 dark:text-gray-400">(List item prototype)</div>
+            </div>
+          );
+        }
+        return null;
       })}
     </div>
   );

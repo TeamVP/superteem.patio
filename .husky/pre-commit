@@ -1,5 +1,7 @@
 #!/usr/bin/env sh
-. "$(dirname -- "$0")/_/husky.sh"
-
-echo "Running pre-commit hooks..."
+# Husky v10+: removed deprecated shim sourcing.
+set -e
+echo "[husky] lint-staged"
 pnpm lint-staged
+echo "[husky] typecheck"
+pnpm typecheck

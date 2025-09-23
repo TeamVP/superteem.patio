@@ -1,4 +1,5 @@
 import { SignJWT } from 'jose';
+import { TextEncoder as NodeTextEncoder } from 'util';
 
 export interface DevJwtClaims {
   sub: string;
@@ -13,7 +14,9 @@ const ISSUER = 'dev://local';
 export async function getDevJwt(subject: string, name?: string, email?: string): Promise<string> {
   const secret = import.meta.env.VITE_DEV_JWT_SECRET as string | undefined;
   if (!secret) throw new Error('VITE_DEV_JWT_SECRET not set');
-  const enc = new TextEncoder();
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const Enc = (globalThis as any).TextEncoder || NodeTextEncoder;
+  const enc = new Enc();
   const key = enc.encode(secret);
   const now = Math.floor(Date.now() / 1000);
   const exp = now + 15 * 60; // 15 minutes

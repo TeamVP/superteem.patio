@@ -1,5 +1,5 @@
-import { query } from "convex/server";
+import { query } from '../../convex/_generated/server';
 
 export default query(async () => {
-  return "Hello from Convex!";
+  return 'Hello from Convex!';
 });

@@ -18,7 +18,8 @@
     "baseUrl": "./",
     "paths": {
       "@/*": ["src/*"]
-    }
+    },
+  "types": ["vitest/globals", "node"]
   },
-  "include": ["src"]
+  "include": ["src", "scripts", "spec/schema", "spec/examples", "convex", "server" ]
 }

@@ -1,0 +1,14 @@
+{
+  "$id": "https://patio.superteem.com/schema/submission-context.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "SubmissionContext",
+  "type": "object",
+  "required": ["unitId", "teamId", "reporterUserId", "occurredAt"],
+  "properties": {
+    "unitId": { "type": "string", "minLength": 1 },
+    "teamId": { "type": "string", "minLength": 1 },
+    "reporterUserId": { "type": "string", "minLength": 1 },
+    "occurredAt": { "type": "string", "format": "date-time" }
+  },
+  "additionalProperties": false
+}

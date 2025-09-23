@@ -1,0 +1,19 @@
+{
+  "id": "resp-001",
+  "templateId": "sibr-readiness-survey",
+  "templateVersion": "1.0.0",
+  "submitterId": "user-123",
+  "status": "draft",
+  "context": {
+    "unitId": "unit-001",
+    "teamId": "team-001",
+    "reporterUserId": "user-123",
+    "occurredAt": "2025-09-20T12:00:00.000Z"
+  },
+  "answers": {
+    "question-1": "Yes",
+    "question-2": 5
+  },
+  "createdAt": "2025-09-20T12:00:00.000Z",
+  "payload": { "meta": "example" }
+}

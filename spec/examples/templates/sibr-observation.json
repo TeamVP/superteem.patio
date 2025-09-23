@@ -1,0 +1,293 @@
+[
+  {
+    "type": "CompositeQuestion",
+    "label": null,
+    "note": null,
+    "required": false,
+    "variable": null,
+    "enableIf": null,
+    "customValidations": [],
+    "layout": 1,
+    "questions": [
+      {
+        "type": "IntegerQuestion",
+        "label": "Team patient census",
+        "note": null,
+        "required": true,
+        "variable": "$patient_census",
+        "enableIf": null,
+        "customValidations": [
+          {
+            "expression": "$patient_census <= 30",
+            "errorMessage": "This patient census seems very high. Please double check before submitting."
+          },
+          {
+            "expression": "$patient_census >= ($bedside || 0) + ($hallway || 0)",
+            "errorMessage": "Patient census must be equal to or greater than the number of SIBRs at the bedside & hallway."
+          }
+        ],
+        "display": 0,
+        "minimum": 1,
+        "maximum": null
+      },
+      {
+        "type": "MultipleChoiceQuestion",
+        "required": true,
+        "label": "Did SIBR occur?",
+        "customValidations": [],
+        "options": ["No", "Yes"],
+        "minimumResponses": 1,
+        "maximumResponses": 1,
+        "variable": "$sibr_occurred",
+        "note": null,
+        "enableIf": null
+      }
+    ]
+  },
+  {
+    "type": "CompositeQuestion",
+    "label": "Doctors who attended the round",
+    "note": null,
+    "required": false,
+    "variable": null,
+    "enableIf": "$sibr_occurred && $sibr_occurred[0] === 1",
+    "customValidations": [],
+    "layout": 2,
+    "questions": [
+      {
+        "type": "ListQuestion",
+        "label": null,
+        "note": null,
+        "required": false,
+        "variable": null,
+        "enableIf": null,
+        "customValidations": [],
+        "layout": 2,
+        "minimumAnswers": 1,
+        "maximumAnswers": null,
+        "question": {
+          "type": "UserQuestion",
+          "label": "Doctor",
+          "note": null,
+          "required": false,
+          "variable": "$doctor",
+          "enableIf": null,
+          "customValidations": [],
+          "jobTypeCategories": ["Medical"],
+          "jobTypeIds": null
+        }
+      }
+    ]
+  },
+  {
+    "type": "CompositeQuestion",
+    "label": "Allied who attended the round",
+    "note": null,
+    "required": false,
+    "variable": null,
+    "enableIf": "$sibr_occurred && $sibr_occurred[0] === 1",
+    "customValidations": [],
+    "layout": 2,
+    "questions": [
+      {
+        "type": "ListQuestion",
+        "label": null,
+        "note": null,
+        "required": false,
+        "variable": null,
+        "enableIf": null,
+        "customValidations": [],
+        "layout": 2,
+        "minimumAnswers": 1,
+        "maximumAnswers": null,
+        "question": {
+          "type": "UserQuestion",
+          "label": "Allied",
+          "note": null,
+          "required": false,
+          "variable": "$allied",
+          "enableIf": null,
+          "customValidations": [],
+          "jobTypeCategories": ["Allied Health"],
+          "jobTypeIds": null
+        }
+      }
+    ]
+  },
+  {
+    "type": "CompositeQuestion",
+    "label": "SIBR details",
+    "note": null,
+    "required": false,
+    "variable": null,
+    "enableIf": "$sibr_occurred && $sibr_occurred[0] === 1",
+    "customValidations": [],
+    "layout": 2,
+    "questions": [
+      {
+        "type": "CompositeQuestion",
+        "label": null,
+        "note": null,
+        "required": false,
+        "variable": null,
+        "enableIf": null,
+        "customValidations": [],
+        "layout": 1,
+        "questions": [
+          {
+            "type": "IntegerQuestion",
+            "required": false,
+            "label": "SIBRs at the bedside",
+            "customValidations": [
+              {
+                "expression": "!$bedside || $patient_census >= $bedside + $hallway",
+                "errorMessage": "If the number of SIBRs at the bedside & in the hallway are correct, then the Team patient census (near the top of the form) is too low."
+              }
+            ],
+            "display": 0,
+            "minimum": 0,
+            "maximum": null,
+            "variable": "$bedside",
+            "note": null,
+            "enableIf": null
+          },
+          {
+            "type": "IntegerQuestion",
+            "required": false,
+            "label": "SIBRs in the hallway",
+            "customValidations": [
+              {
+                "expression": "!$hallway || $patient_census >= $bedside + $hallway",
+                "errorMessage": "If the number of SIBRs at the bedside & in the hallway are correct, then the Team patient census (near the top of the form) is too low."
+              }
+            ],
+            "display": 0,
+            "minimum": 0,
+            "maximum": null,
+            "variable": "$hallway",
+            "note": null,
+            "enableIf": null
+          },
+          {
+            "type": "IntegerQuestion",
+            "required": false,
+            "label": "Families attended on-site",
+            "customValidations": [
+              {
+                "expression": "!$onsite || ($bedside + $hallway) >= ($onsite + $offsite)",
+                "errorMessage": "The number of family attended must be less than or equal to the number of SIBRs (at the bedside & hallway)."
+              }
+            ],
+            "display": 0,
+            "minimum": 0,
+            "maximum": null,
+            "variable": "$onsite",
+            "note": null,
+            "enableIf": null
+          },
+          {
+            "type": "IntegerQuestion",
+            "required": false,
+            "label": "Families attended remotely",
+            "customValidations": [
+              {
+                "expression": "!$offsite || ($bedside + $hallway) >= ($onsite + $offsite)",
+                "errorMessage": "The number of family attended must be less than or equal to the number of SIBRs (at the bedside & hallway)."
+              }
+            ],
+            "display": 0,
+            "minimum": 0,
+            "maximum": null,
+            "variable": "$offsite",
+            "note": null,
+            "enableIf": null
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "CompositeQuestion",
+    "label": "Your review of the round",
+    "note": null,
+    "required": false,
+    "variable": null,
+    "enableIf": "$sibr_occurred && $sibr_occurred[0] === 1",
+    "customValidations": [],
+    "layout": 2,
+    "questions": [
+      {
+        "type": "MultipleChoiceQuestion",
+        "label": "SIBR started on time",
+        "note": null,
+        "required": false,
+        "variable": "$ontime",
+        "enableIf": null,
+        "customValidations": [],
+        "options": ["No", "Yes"],
+        "minimumResponses": 0,
+        "maximumResponses": 1
+      },
+      {
+        "type": "MultipleChoiceQuestion",
+        "label": "Respectfully engaged and cross-checked patient and family",
+        "note": null,
+        "required": false,
+        "variable": "$structured",
+        "enableIf": null,
+        "customValidations": [],
+        "options": ["Some patients", "Most patients", "Almost all patients", "Every patient"],
+        "minimumResponses": 0,
+        "maximumResponses": 1
+      },
+      {
+        "type": "MultipleChoiceQuestion",
+        "label": "Avoided or translated medical jargon",
+        "note": null,
+        "required": false,
+        "variable": "$addresses_issues",
+        "enableIf": null,
+        "customValidations": [],
+        "options": ["Some patients", "Most patients", "Almost all patients", "Every patient"],
+        "minimumResponses": 0,
+        "maximumResponses": 1
+      },
+      {
+        "type": "MultipleChoiceQuestion",
+        "label": "Unhurried yet adhered to the SIBR structure",
+        "note": null,
+        "required": false,
+        "variable": "$discharge_plan",
+        "enableIf": null,
+        "customValidations": [],
+        "options": ["Some patients", "Most patients", "Almost all patients", "Every patient"],
+        "minimumResponses": 0,
+        "maximumResponses": 1
+      },
+      {
+        "type": "MultipleChoiceQuestion",
+        "label": "Activated team around the plan and EDD",
+        "note": null,
+        "required": false,
+        "variable": "$quality_sibr",
+        "enableIf": null,
+        "customValidations": [],
+        "options": ["Some patients", "Most patients", "Almost all patients", "Every patient"],
+        "minimumResponses": 0,
+        "maximumResponses": 1
+      }
+    ]
+  },
+  {
+    "type": "StringQuestion",
+    "required": false,
+    "label": "Notes",
+    "customValidations": [],
+    "lineType": 2,
+    "minimumLength": null,
+    "maximumLength": 1000,
+    "variable": "$notes",
+    "note": null,
+    "enableIf": null
+  }
+]

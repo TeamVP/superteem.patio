@@ -1,12 +1,21 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { mutationGeneric, queryGeneric } from 'convex/server';
 import { v } from 'convex/values';
 import { buildValidationContext, runValidation } from '../../shared/validation';
+import { requireRole } from '../../shared/auth';
 import type { Template } from '../../../src/types/template';
+import { writeAudit } from '../../shared/audit';
 
-async function loadTemplateVersion(db: any, templateId: string, version: number): Promise<Template | null> {
+async function loadTemplateVersion(
+  db: any,
+  templateId: string,
+  version: number
+): Promise<Template | null> {
   const row = await db
     .query('templateVersions')
-    .withIndex('by_template_version', (q: any) => q.eq('templateId', templateId).eq('version', version))
+    .withIndex('by_template_version', (q: any) =>
+      q.eq('templateId', templateId).eq('version', version)
+    )
     .unique();
   return row?.body ?? null;
 }
@@ -19,11 +28,13 @@ export const saveDraft = mutationGeneric({
     payload: v.any(),
     submitterId: v.string(),
   },
-  handler: async ({ db }, args) => {
+  handler: async (context, args) => {
+    await requireRole(context as any, ['admin', 'author', 'responder']);
+    const { db } = context as any;
     const tpl = await loadTemplateVersion(db, args.templateId, args.templateVersion);
     if (!tpl) throw new Error('Template version not found');
-    const ctx = buildValidationContext(tpl);
-    const result = runValidation(tpl, args.answers, ctx, {});
+    const vctx = buildValidationContext(tpl);
+    const result = runValidation(tpl, args.answers, vctx, {});
     // Drafts can have errors; we still store but return them.
     const now = Date.now();
     const id = await db.insert('responses', {
@@ -48,11 +59,13 @@ export const submitResponse = mutationGeneric({
     payload: v.any(),
     submitterId: v.string(),
   },
-  handler: async ({ db }, args) => {
+  handler: async (context, args) => {
+    await requireRole(context as any, ['admin', 'author', 'responder']);
+    const { db } = context as any;
     const tpl = await loadTemplateVersion(db, args.templateId, args.templateVersion);
     if (!tpl) throw new Error('Template version not found');
-    const ctx = buildValidationContext(tpl);
-    const result = runValidation(tpl, args.answers, ctx, {});
+    const vctx = buildValidationContext(tpl);
+    const result = runValidation(tpl, args.answers, vctx, {});
     if (Object.keys(result.fieldErrors).length > 0 || result.formErrors.length > 0) {
       throw new Error('Validation failed');
     }
@@ -67,6 +80,14 @@ export const submitResponse = mutationGeneric({
       createdAt: now,
       submittedAt: now,
     });
+    await writeAudit(context as any, {
+      entityType: 'response',
+      entityId: String(id),
+      action: 'submit',
+      actorId: args.submitterId,
+      version: args.templateVersion,
+      summary: `submit response template ${args.templateId} v${args.templateVersion}`,
+    });
     return { id };
   },
 });
@@ -78,6 +99,11 @@ export const listResponsesByTemplate = queryGeneric({
       .query('responses')
       .withIndex('by_template_version', (q: any) => q.eq('templateId', args.templateId))
       .collect();
-    return rows.map((r: any) => ({ id: r._id, templateVersion: r.templateVersion, status: r.status, createdAt: r.createdAt }));
+    return rows.map((r: any) => ({
+      id: r._id,
+      templateVersion: r.templateVersion,
+      status: r.status,
+      createdAt: r.createdAt,
+    }));
   },
 });

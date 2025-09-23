@@ -1,17 +1,71 @@
-import React from 'react';
-import { ConvexReactClient } from 'convex/react';
-import { ConvexProviderWithAuth } from 'convex/react-clerk'; // fallback for prod (using Clerk's auth shape)
-import { useDevAuth } from './useDevAuth';
+// prettier-ignore
+import React, { useState, useEffect, createContext, useContext } from 'react';
+import { ConvexReactClient, ConvexProvider } from 'convex/react';
+import { consumePostAuthRedirect } from '@/auth/postAuthRedirect';
 
 const convexUrl = import.meta.env.VITE_CONVEX_URL as string;
 const convexClient = new ConvexReactClient(convexUrl);
 
+type Role = 'admin' | 'reviewer' | 'author' | 'responder';
+interface RoleContextValue {
+  role: Role;
+  setRole: (r: Role) => void;
+}
+interface LocalStorageLike {
+  getItem(key: string): string | null;
+  setItem(key: string, value: string): void;
+}
+const RoleContext = createContext<RoleContextValue | undefined>(undefined);
+export function useDevRole() {
+  const ctx = useContext(RoleContext);
+  if (!ctx) throw new Error('useDevRole must be used within DevAuthProvider');
+  return ctx;
+}
+
 export const DevAuthProvider: React.FC<React.PropsWithChildren> = ({ children }) => {
-  const enabled = import.meta.env.VITE_DEV_AUTH === '1';
-  if (enabled) {
-    // ConvexProviderWithAuth normally imported from convex/react, but we can simulate via ConvexProviderWithAuth from react-clerk? For dev we provide custom useAuth.
-    // @ts-expect-error Using custom useAuth signature compatible at runtime
-    return <ConvexProviderWithAuth client={convexClient} useAuth={useDevAuth}>{children}</ConvexProviderWithAuth>;
-  }
-  return <ConvexProviderWithAuth client={convexClient}>{children}</ConvexProviderWithAuth>;
+  const [role, setRole] = useState<Role>(() => {
+    if (typeof globalThis !== 'undefined' && 'localStorage' in globalThis) {
+      try {
+        const stored = (globalThis as { localStorage: LocalStorageLike }).localStorage.getItem(
+          'devRole'
+        );
+        return (stored as Role) || 'admin';
+      } catch {
+        return 'admin';
+      }
+    }
+    return 'admin';
+  });
+  useEffect(() => {
+    if (typeof globalThis !== 'undefined' && 'localStorage' in globalThis) {
+      try {
+        (globalThis as { localStorage: LocalStorageLike }).localStorage.setItem('devRole', role);
+      } catch {
+        /* ignore */
+      }
+    }
+  }, [role]);
+  useEffect(() => {
+    const redirect = consumePostAuthRedirect();
+    if (redirect) {
+      globalThis.location.replace(redirect);
+    }
+  }, []);
+  return (
+    <ConvexProvider client={convexClient}>
+      <RoleContext.Provider value={{ role, setRole }}>{children}</RoleContext.Provider>
+    </ConvexProvider>
+  );
 };
+
+export {};
+
+
+
+
+
+
+
+
+
+

@@ -18,7 +18,7 @@ export interface Token {
 const whitespace = /[\s]+/y;
 const numberRe = /(?:\d+(?:\.\d+)?)/y;
 const varRe = /\$[a-zA-Z0-9_]+/y;
-const opRe = /(===|==|>=|<=|&&|\|\||[+\-*/><=])/y;
+const opRe = /(===|==|>=|<=|&&|\|\||[+\-*/><=!])/y;
 
 export function tokenize(input: string): Token[] {
   const tokens: Token[] = [];
@@ -114,6 +114,12 @@ function isVar(expr: JSONLogicExpression): expr is { var: string } {
 
 function parsePrimary(state: ParserState): JSONLogicExpression {
   const t = peek(state);
+  // Unary bang operator
+  if (t.type === 'OP' && t.value === '!') {
+    consume(state, 'OP');
+    const inner = parsePrimary(state);
+  return { '!': [inner] } as unknown as JSONLogicExpression;
+  }
   if (t.type === 'NUMBER') {
     consume(state);
     return Number(t.value);

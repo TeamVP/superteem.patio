@@ -191,7 +191,6 @@ export function TemplateRenderer({
   return (
     <div className="space-y-4">
       {template.body.map((q) => {
-        const qVar = q.variable ? q.variable.replace(/^\$/, '') : undefined;
         const vis = q.id ? visibility[q.id] : true;
         const finalVisible = vis !== undefined ? vis : q.enableIf ? false : true;
         return (
@@ -199,10 +198,10 @@ export function TemplateRenderer({
             key={q.id}
             q={q}
             visible={finalVisible}
-            answerValue={qVar ? answers[qVar] : undefined}
+            answers={answers}
             onChange={updateAnswer}
             visibility={visibility}
-            errors={errors.field[q.id || '']}
+            errorsByQuestionId={errors.field}
           />
         );
       })}
@@ -272,22 +271,25 @@ function findQuestion(qs: Question[], id: string): Question | undefined {
 interface QuestionNodeProps {
   q: Question;
   visible: boolean;
-  answerValue: unknown;
+  answers: Record<string, unknown>;
   onChange: (q: Question, value: unknown) => void;
   visibility: Record<string, boolean>;
-  errors?: string[];
+  errorsByQuestionId: Record<string, string[]>;
 }
 
 function QuestionNode({
   q,
   visible,
-  answerValue,
+  answers,
   onChange,
-  errors,
+  errorsByQuestionId,
   visibility: visibilityMap,
 }: QuestionNodeProps) {
   if (!visible) return null;
   const qt = q.type as string; // allow legacy/extended types gracefully
+  const thisVar = q.variable ? q.variable.replace(/^\$/, '') : undefined;
+  const answerValue = thisVar ? answers[thisVar] : undefined;
+  const errors = (q.id && errorsByQuestionId[q.id]) || [];
   switch (qt) {
     case 'CompositeQuestion':
       return (
@@ -298,14 +300,10 @@ function QuestionNode({
               key={child.id}
               q={child}
               visible={visibilityMap[child.id || ''] !== false}
-              answerValue={
-                child.variable && typeof answerValue === 'object' && answerValue
-                  ? (answerValue as Record<string, unknown>)[child.variable]
-                  : undefined
-              }
+              answers={answers}
               onChange={onChange}
               visibility={visibilityMap}
-              errors={errors}
+              errorsByQuestionId={errorsByQuestionId}
             />
           ))}
         </div>
@@ -317,9 +315,10 @@ function QuestionNode({
           <QuestionNode
             q={(q as ListQuestion).question}
             visible={visibilityMap[(q as ListQuestion).question.id || ''] !== false}
-            answerValue={answerValue}
+            answers={answers}
             onChange={onChange}
             visibility={visibilityMap}
+            errorsByQuestionId={errorsByQuestionId}
           />
           <div className="text-xs text-gray-500 dark:text-gray-400">
             Multiple entries not yet supported – capturing a single item.
@@ -378,29 +377,40 @@ function QuestionNode({
         <div className="space-y-1">
           <div className="text-sm font-medium">{q.label}</div>
           <div className="flex flex-wrap gap-2">
-            {(
-              q as unknown as import('../../../types/template').MultipleChoiceQuestion
-            ).options?.map((opt: string) => {
-              const arr = (answerValue as string[]) || [];
-              const checked = arr.includes(opt);
-              return (
-                <label
-                  key={opt}
-                  className="flex items-center gap-1 text-xs px-2 py-1 rounded border cursor-pointer bg-gray-50 dark:bg-gray-800 border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700"
-                >
-                  <input
-                    type="checkbox"
-                    className="accent-blue-600"
-                    checked={checked}
-                    onChange={() => {
-                      const next = checked ? arr.filter((x) => x !== opt) : [...arr, opt];
-                      onChange(q, next);
-                    }}
-                  />
-                  <span className="text-gray-700 dark:text-gray-200">{opt}</span>
-                </label>
-              );
-            })}
+            {(() => {
+              const mc = q as unknown as import('../../../types/template').MultipleChoiceQuestion;
+              const mode = mc.valueMode || 'value';
+              const raw = answerValue as unknown;
+              const arr = Array.isArray(raw) ? (raw as unknown[]) : [];
+              return mc.options?.map((opt: string, idx: number) => {
+                const checked =
+                  mode === 'index' ? arr.includes(idx) : arr.includes(opt as unknown as never);
+                return (
+                  <label
+                    key={opt}
+                    className="flex items-center gap-1 text-xs px-2 py-1 rounded border cursor-pointer bg-gray-50 dark:bg-gray-800 border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700"
+                  >
+                    <input
+                      type="checkbox"
+                      className="accent-blue-600"
+                      checked={checked}
+                      onChange={() => {
+                        let next: unknown[];
+                        if (mode === 'index') {
+                          const current = arr as number[];
+                          next = checked ? current.filter((x) => x !== idx) : [...current, idx];
+                        } else {
+                          const current = arr as string[];
+                          next = checked ? current.filter((x) => x !== opt) : [...current, opt];
+                        }
+                        onChange(q, next);
+                      }}
+                    />
+                    <span className="text-gray-700 dark:text-gray-200">{opt}</span>
+                  </label>
+                );
+              });
+            })()}
           </div>
           {errors?.map((err) => (
             <div key={err} className="text-xs text-red-600">

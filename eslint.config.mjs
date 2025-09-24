@@ -52,7 +52,7 @@ export default [
     },
   },
   {
-    files: ['scripts/**/*.{js,mjs}'],
+    files: ['scripts/**/*.{js,mjs,cjs}'],
     languageOptions: {
       globals: {
         console: 'readonly',

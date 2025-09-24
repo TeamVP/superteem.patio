@@ -145,13 +145,30 @@ export const revertTemplateVersion = mutation({
 export const listTemplateVersions = query({
   args: { templateId: v.id('templates') },
   handler: async (ctx, { templateId }) => {
-    // Basic authorization: ensure template is visible
-    // (Editors/respondents can view published history; keeping simple here)
-    const versions = await ctx.db
+    // Fetch persisted snapshots
+    const snapshots = await ctx.db
       .query('templateVersions')
-      .withIndex('by_template', (q) => q.eq('templateId', templateId))
+      .withIndex('by_template', (q: any) => q.eq('templateId', templateId))
       .collect();
-    return versions.sort((a, b) => b.version - a.version);
+    const tmpl = await ctx.db.get(templateId);
+    if (!tmpl) return [];
+    // If the template.latestVersion has no snapshot (e.g. manual DB edit),
+    // surface an ephemeral version so respondent UI displays the current body.
+  const hasLatest = snapshots.some((s: any) => s.version === tmpl.latestVersion);
+    if (!hasLatest && tmpl.body) {
+      snapshots.push({
+        // _id omitted for ephemeral record; keep shape compatible with query result usage
+        templateId,
+        version: tmpl.latestVersion,
+        body: tmpl.body,
+        schemaVersion: 'v1',
+        createdAt: tmpl.updatedAt ?? Date.now(),
+        createdBy: tmpl.createdBy,
+        publishedAt: tmpl.updatedAt ?? Date.now(),
+        status: tmpl.status ?? 'published',
+      });
+    }
+    return snapshots.sort((a: any, b: any) => b.version - a.version);
   },
 });
 
@@ -458,12 +475,179 @@ export const seedExamples = mutation({
       ],
     });
 
+    // AHPEQS Survey (Multiple-choice only)
+    const ahpeqsBody = [
+      {
+        type: 'MultipleChoiceQuestion',
+        label: 'My views and concerns were listened to',
+        note: null,
+        required: false,
+        variable: '$views_listened',
+        enableIf: null,
+        customValidations: [],
+        options: ['Always', 'Mostly', 'Sometimes', 'Rarely', 'Never', "Didn't apply"],
+        minimumResponses: 0,
+        maximumResponses: 1,
+        valueMode: 'index',
+      },
+      {
+        type: 'MultipleChoiceQuestion',
+        label: 'My individual needs were met',
+        note: null,
+        required: false,
+        variable: '$needs_met',
+        enableIf: null,
+        customValidations: [],
+        options: ['Always', 'Mostly', 'Sometimes', 'Rarely', 'Never'],
+        minimumResponses: 0,
+        maximumResponses: 1,
+        valueMode: 'index',
+      },
+      {
+        type: 'MultipleChoiceQuestion',
+        label: 'When a need could not be met, staff explained why',
+        note: null,
+        required: false,
+        variable: '$needs_explained',
+        enableIf: '$needs_met && $needs_met[0] >= 2',
+        customValidations: [],
+        options: ['Always', 'Mostly', 'Sometimes', 'Rarely', 'Never'],
+        minimumResponses: 0,
+        maximumResponses: 1,
+        valueMode: 'index',
+      },
+      {
+        type: 'MultipleChoiceQuestion',
+        label: 'I felt cared for',
+        note: null,
+        required: false,
+        variable: '$felt_cared',
+        enableIf: null,
+        customValidations: [],
+        options: ['Always', 'Mostly', 'Sometimes', 'Rarely', 'Never'],
+        minimumResponses: 0,
+        maximumResponses: 1,
+        valueMode: 'index',
+      },
+      {
+        type: 'MultipleChoiceQuestion',
+        label:
+          'I was involved as much as I wanted in making decisions about my treatment and care',
+        note: null,
+        required: false,
+        variable: '$involved',
+        enableIf: null,
+        customValidations: [],
+        options: ['Always', 'Mostly', 'Sometimes', 'Rarely', 'Never'],
+        minimumResponses: 0,
+        maximumResponses: 1,
+        valueMode: 'index',
+      },
+      {
+        type: 'MultipleChoiceQuestion',
+        label:
+          'I was kept informed as much as I wanted about my treatment and care',
+        note: null,
+        required: false,
+        variable: '$informed',
+        enableIf: null,
+        customValidations: [],
+        options: ['Always', 'Mostly', 'Sometimes', 'Rarely', 'Never'],
+        minimumResponses: 0,
+        maximumResponses: 1,
+        valueMode: 'index',
+      },
+      {
+        type: 'MultipleChoiceQuestion',
+        label:
+          'As far as I could tell, the staff involved in my care communicated with each other about my treatment',
+        note: null,
+        required: false,
+        variable: '$team_communicated',
+        enableIf: null,
+        customValidations: [],
+        options: ['Always', 'Mostly', 'Sometimes', 'Rarely', 'Never', "Didn't apply"],
+        minimumResponses: 0,
+        maximumResponses: 1,
+        valueMode: 'index',
+      },
+      {
+        type: 'MultipleChoiceQuestion',
+        label: 'I received pain relief that met my needs',
+        note: null,
+        required: false,
+        variable: '$pain_relief',
+        enableIf: null,
+        customValidations: [],
+        options: ['Always', 'Mostly', 'Sometimes', 'Rarely', 'Never', "Didn't apply"],
+        minimumResponses: 0,
+        maximumResponses: 1,
+        valueMode: 'index',
+      },
+      {
+        type: 'MultipleChoiceQuestion',
+        label:
+          'When I was in the hospital, I felt confident in the safety of my treatment and care',
+        note: null,
+        required: false,
+        variable: '$confident_safety',
+        enableIf: null,
+        customValidations: [],
+        options: ['Always', 'Mostly', 'Sometimes', 'Rarely', 'Never'],
+        minimumResponses: 0,
+        maximumResponses: 1,
+        valueMode: 'index',
+      },
+      {
+        type: 'MultipleChoiceQuestion',
+        label:
+          'I experienced unexpected harm or distress as a result of my treatment or care',
+        note: null,
+        required: false,
+        variable: '$harm_distress',
+        enableIf: null,
+        customValidations: [],
+        options: ['Yes, physical harm', 'Yes, emotional distress', 'Yes, both', 'No'],
+        minimumResponses: 0,
+        maximumResponses: 1,
+        valueMode: 'index',
+      },
+      {
+        type: 'MultipleChoiceQuestion',
+        label: 'My harm or distress was discussed with me by staff',
+        note: null,
+        required: false,
+        variable: '$harm_discussed',
+        enableIf: '$harm_distress && $harm_distress[0] !== 3',
+        customValidations: [],
+        options: ['Yes', 'No', 'Not sure', "Didn't want to discuss it"],
+        minimumResponses: 0,
+        maximumResponses: 1,
+        valueMode: 'index',
+      },
+      {
+        type: 'MultipleChoiceQuestion',
+        label: 'Overall, the quality of the treatment and care I received was:',
+        note: null,
+        required: false,
+        variable: '$overall_quality',
+        enableIf: null,
+        customValidations: [],
+        options: ['Very good', 'Good', 'Average', 'Poor', 'Very poor'],
+        minimumResponses: 0,
+        maximumResponses: 1,
+        valueMode: 'index',
+      },
+    ];
+    const ahpeqs = await ensureTemplate('ahpeqs-survey', 'AHPEQS Survey', ahpeqsBody);
+
     return {
       ok: true,
       inserted: {
         interdisciplinaryCare,
         sibrObservation,
         sibrReadiness,
+        ahpeqs,
       },
     };
   },
@@ -478,5 +662,125 @@ export const slugAvailable = query({
       .withIndex('by_slug', (q) => q.eq('slug', slug))
       .first();
     return { available: !existing };
+  },
+});
+
+// Backfill a missing templateVersions snapshot when template.latestVersion was
+// manually incremented or body updated without publishTemplateVersion.
+export const backfillTemplateVersion = mutation({
+  args: { templateId: v.id('templates') },
+  handler: async (ctx, { templateId }) => {
+    await assertTemplateRole(ctx, templateId, ['publisher', 'admin']);
+    const tmpl = await ctx.db.get(templateId);
+    if (!tmpl) throw new Error('Template not found');
+    const existing = await ctx.db
+      .query('templateVersions')
+      .withIndex('by_template_version', (q) =>
+        q.eq('templateId', templateId).eq('version', tmpl.latestVersion)
+      )
+      .first();
+    if (existing) {
+      return {
+        ok: true,
+        skipped: true,
+        reason: 'Snapshot already exists',
+        version: existing.version,
+      };
+    }
+    const now = Date.now();
+    await ctx.db.insert('templateVersions', {
+      templateId,
+      version: tmpl.latestVersion,
+      body: tmpl.body,
+      schemaVersion: 'v1',
+      createdAt: now,
+      createdBy: tmpl.createdBy,
+      publishedAt: now,
+      status: 'published',
+    });
+    await ctx.runMutation(internal.audit.logAudit, {
+      entityType: 'templateVersion',
+      entityId: templateId,
+      action: 'publish',
+      summary: `backfill snapshot v${tmpl.latestVersion}`,
+      version: tmpl.latestVersion,
+      actorId: tmpl.createdBy,
+    });
+    return { ok: true, skipped: false, version: tmpl.latestVersion };
+  },
+});
+
+// Admin/backfill utility: overwrite a template body with a new full JSON structure and create next version.
+// This is intentionally not exposed to regular editors; use only for data correction/migration.
+export const adminOverwriteTemplateBody = mutation({
+  args: {
+    templateId: v.id('templates'),
+    body: v.any(), // raw JSON array from spec/examples/templates/sibr-observation.json
+    title: v.optional(v.string()),
+    type: v.optional(v.string()),
+    schemaVersion: v.optional(v.string()),
+  },
+  handler: async (
+    ctx: any,
+    args: {
+      templateId: string; // Convex Id<'templates'> but keep loose here to avoid import clutter
+      body: unknown;
+      title?: string;
+      type?: string;
+      schemaVersion?: string;
+    }
+  ) => {
+    const { templateId, body, title, type, schemaVersion } = args;
+    // Authorization: require admin or publisher on template team (reuse assertTemplateRole)
+    await assertTemplateRole(ctx, templateId, ['admin', 'publisher']);
+    const tmpl = await ctx.db.get(templateId);
+    if (!tmpl) throw new Error('Template not found');
+
+    // Normalize & assign deterministic ids to every question node if missing.
+    let counter = 0;
+    const assignIds = (node: any): any => {
+      if (Array.isArray(node)) return node.map(assignIds);
+      if (!node || typeof node !== 'object') return node;
+      const out: any = { ...node };
+      if (!out.id) out.id = `q${counter++}`;
+      if (out.questions && Array.isArray(out.questions)) {
+        out.questions = out.questions.map(assignIds);
+      }
+      if (out.question && typeof out.question === 'object') {
+        out.question = assignIds(out.question);
+      }
+      return out;
+    };
+    const normalizedBody = assignIds(body);
+
+    const now = Date.now();
+    const nextVersion = (tmpl.latestVersion ?? 0) + 1;
+    // Patch template with new body & optionally title/type
+    await ctx.db.patch(templateId, {
+      body: normalizedBody,
+      latestVersion: nextVersion,
+      updatedAt: now,
+      ...(title ? { title } : {}),
+      ...(type ? { type } : {}),
+    });
+    await ctx.db.insert('templateVersions', {
+      templateId,
+      version: nextVersion,
+      body: normalizedBody,
+      schemaVersion: schemaVersion || 'v1',
+      createdAt: now,
+      createdBy: tmpl.createdBy,
+      publishedAt: now,
+      status: 'published',
+    });
+    await ctx.runMutation(internal.audit.logAudit, {
+      entityType: 'templateVersion',
+      entityId: templateId,
+      action: 'publish',
+      summary: `admin overwrite to v${nextVersion}`,
+      version: nextVersion,
+      actorId: tmpl.createdBy,
+    });
+    return { ok: true, version: nextVersion };
   },
 });

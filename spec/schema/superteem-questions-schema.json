@@ -1,0 +1,1244 @@
+{
+  "definitions": {
+    "BinaryQuestion": {
+      "type": "object",
+      "properties": {
+        "Type": {
+          "type": "string",
+          "const": "BinaryQuestion"
+        },
+        "Label": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "Note": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "Variable": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "Required": {
+          "type": "boolean"
+        },
+        "EnableIf": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "CustomValidations": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "$ref": "#/definitions/CustomValidation"
+          }
+        }
+      },
+      "required": [
+        "Type",
+        "Label",
+        "Note",
+        "Variable",
+        "Required",
+        "EnableIf"
+      ]
+    },
+    "CompositeQuestion": {
+      "type": "object",
+      "properties": {
+        "Layout": {
+          "type": "integer",
+          "enum": [
+            0,
+            1,
+            2
+          ]
+        },
+        "Questions": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {}
+        },
+        "Type": {
+          "type": "string",
+          "const": "CompositeQuestion"
+        },
+        "Label": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "Note": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "Variable": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "Required": {
+          "type": "boolean"
+        },
+        "EnableIf": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "CustomValidations": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "$ref": "#/definitions/CustomValidation"
+          }
+        }
+      },
+      "required": [
+        "Layout",
+        "Questions",
+        "Type",
+        "Label",
+        "Note",
+        "Variable",
+        "Required",
+        "EnableIf"
+      ]
+    },
+    "CustomValidation": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "Expression": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 128
+        },
+        "ErrorMessage": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 256
+        }
+      },
+      "required": [
+        "Expression",
+        "ErrorMessage"
+      ]
+    },
+    "DateTimeQuestion": {
+      "type": "object",
+      "properties": {
+        "Constraint": {
+          "type": "integer",
+          "enum": [
+            0,
+            1
+          ]
+        },
+        "Minimum": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date-time"
+        },
+        "Maximum": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date-time"
+        },
+        "Type": {
+          "type": "string",
+          "const": "DateTimeQuestion"
+        },
+        "Label": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "Note": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "Variable": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "Required": {
+          "type": "boolean"
+        },
+        "EnableIf": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "CustomValidations": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "$ref": "#/definitions/CustomValidation"
+          }
+        }
+      },
+      "required": [
+        "Constraint",
+        "Minimum",
+        "Maximum",
+        "Type",
+        "Label",
+        "Note",
+        "Variable",
+        "Required",
+        "EnableIf"
+      ]
+    },
+    "DecimalQuestion": {
+      "type": "object",
+      "properties": {
+        "Minimum": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "Maximum": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "Type": {
+          "type": "string",
+          "const": "DecimalQuestion"
+        },
+        "Label": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "Note": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "Variable": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "Required": {
+          "type": "boolean"
+        },
+        "EnableIf": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "CustomValidations": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "$ref": "#/definitions/CustomValidation"
+          }
+        }
+      },
+      "required": [
+        "Minimum",
+        "Maximum",
+        "Type",
+        "Label",
+        "Note",
+        "Variable",
+        "Required",
+        "EnableIf"
+      ]
+    },
+    "DomainConstraint": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "Type": {
+          "type": "integer",
+          "enum": [
+            0,
+            1
+          ]
+        },
+        "Domains": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        }
+      },
+      "required": [
+        "Type",
+        "Domains"
+      ]
+    },
+    "EmailQuestion": {
+      "type": "object",
+      "properties": {
+        "Constraint": {
+          "$ref": "#/definitions/DomainConstraint"
+        },
+        "Type": {
+          "type": "string",
+          "const": "EmailQuestion"
+        },
+        "Label": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "Note": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "Variable": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "Required": {
+          "type": "boolean"
+        },
+        "EnableIf": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "CustomValidations": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "$ref": "#/definitions/CustomValidation"
+          }
+        }
+      },
+      "required": [
+        "Constraint",
+        "Type",
+        "Label",
+        "Note",
+        "Variable",
+        "Required",
+        "EnableIf"
+      ]
+    },
+    "FileQuestion": {
+      "type": "object",
+      "properties": {
+        "ContentTypes": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "Type": {
+          "type": "string",
+          "const": "FileQuestion"
+        },
+        "Label": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "Note": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "Variable": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "Required": {
+          "type": "boolean"
+        },
+        "EnableIf": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "CustomValidations": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "$ref": "#/definitions/CustomValidation"
+          }
+        }
+      },
+      "required": [
+        "ContentTypes",
+        "Type",
+        "Label",
+        "Note",
+        "Variable",
+        "Required",
+        "EnableIf"
+      ]
+    },
+    "GroupQuestion": {
+      "type": "object",
+      "properties": {
+        "GroupType": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "Type": {
+          "type": "string",
+          "const": "GroupQuestion"
+        },
+        "Label": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "Note": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "Variable": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "Required": {
+          "type": "boolean"
+        },
+        "EnableIf": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "CustomValidations": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "$ref": "#/definitions/CustomValidation"
+          }
+        }
+      },
+      "required": [
+        "GroupType",
+        "Type",
+        "Label",
+        "Note",
+        "Variable",
+        "Required",
+        "EnableIf"
+      ]
+    },
+    "IntegerQuestion": {
+      "type": "object",
+      "properties": {
+        "Display": {
+          "type": "integer",
+          "enum": [
+            0,
+            1
+          ]
+        },
+        "Minimum": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "Maximum": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "Type": {
+          "type": "string",
+          "const": "IntegerQuestion"
+        },
+        "Label": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "Note": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "Variable": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "Required": {
+          "type": "boolean"
+        },
+        "EnableIf": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "CustomValidations": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "$ref": "#/definitions/CustomValidation"
+          }
+        }
+      },
+      "required": [
+        "Display",
+        "Minimum",
+        "Maximum",
+        "Type",
+        "Label",
+        "Note",
+        "Variable",
+        "Required",
+        "EnableIf"
+      ]
+    },
+    "LabelQuestion": {
+      "type": "object",
+      "properties": {
+        "MinimumResponses": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "MaximumResponses": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "Type": {
+          "type": "string",
+          "const": "LabelQuestion"
+        },
+        "Label": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "Note": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "Variable": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "Required": {
+          "type": "boolean"
+        },
+        "EnableIf": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "CustomValidations": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "$ref": "#/definitions/CustomValidation"
+          }
+        }
+      },
+      "required": [
+        "MinimumResponses",
+        "MaximumResponses",
+        "Type",
+        "Label",
+        "Note",
+        "Variable",
+        "Required",
+        "EnableIf"
+      ]
+    },
+    "ListQuestion": {
+      "type": "object",
+      "properties": {
+        "Layout": {
+          "type": "integer",
+          "enum": [
+            0,
+            1,
+            2
+          ]
+        },
+        "Question": {},
+        "MinimumAnswers": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "MaximumAnswers": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "Type": {
+          "type": "string",
+          "const": "ListQuestion"
+        },
+        "Label": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "Note": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "Variable": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "Required": {
+          "type": "boolean"
+        },
+        "EnableIf": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "CustomValidations": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "$ref": "#/definitions/CustomValidation"
+          }
+        }
+      },
+      "required": [
+        "Layout",
+        "Question",
+        "MinimumAnswers",
+        "MaximumAnswers",
+        "Type",
+        "Label",
+        "Note",
+        "Variable",
+        "Required",
+        "EnableIf"
+      ]
+    },
+    "MultipleChoiceQuestion": {
+      "type": "object",
+      "properties": {
+        "Options": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "MinimumResponses": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "MaximumResponses": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "Type": {
+          "type": "string",
+          "const": "MultipleChoiceQuestion"
+        },
+        "Label": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "Note": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "Variable": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "Required": {
+          "type": "boolean"
+        },
+        "EnableIf": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "CustomValidations": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "$ref": "#/definitions/CustomValidation"
+          }
+        }
+      },
+      "required": [
+        "Options",
+        "MinimumResponses",
+        "MaximumResponses",
+        "Type",
+        "Label",
+        "Note",
+        "Variable",
+        "Required",
+        "EnableIf"
+      ]
+    },
+    "PercentageQuestion": {
+      "type": "object",
+      "properties": {
+        "Minimum": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "Maximum": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "Type": {
+          "type": "string",
+          "const": "PercentageQuestion"
+        },
+        "Label": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "Note": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "Variable": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "Required": {
+          "type": "boolean"
+        },
+        "EnableIf": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "CustomValidations": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "$ref": "#/definitions/CustomValidation"
+          }
+        }
+      },
+      "required": [
+        "Minimum",
+        "Maximum",
+        "Type",
+        "Label",
+        "Note",
+        "Variable",
+        "Required",
+        "EnableIf"
+      ]
+    },
+    "QuestionBase": {
+      "oneOf": [
+        {
+          "$ref": "#/definitions/BinaryQuestion"
+        },
+        {
+          "$ref": "#/definitions/CompositeQuestion"
+        },
+        {
+          "$ref": "#/definitions/DateTimeQuestion"
+        },
+        {
+          "$ref": "#/definitions/DecimalQuestion"
+        },
+        {
+          "$ref": "#/definitions/EmailQuestion"
+        },
+        {
+          "$ref": "#/definitions/FileQuestion"
+        },
+        {
+          "$ref": "#/definitions/IntegerQuestion"
+        },
+        {
+          "$ref": "#/definitions/ListQuestion"
+        },
+        {
+          "$ref": "#/definitions/MultipleChoiceQuestion"
+        },
+        {
+          "$ref": "#/definitions/PercentageQuestion"
+        },
+        {
+          "$ref": "#/definitions/StringQuestion"
+        },
+        {
+          "$ref": "#/definitions/TimeOfDayQuestion"
+        },
+        {
+          "$ref": "#/definitions/TimeSpanQuestion"
+        },
+        {
+          "$ref": "#/definitions/GroupQuestion"
+        },
+        {
+          "$ref": "#/definitions/LabelQuestion"
+        },
+        {
+          "$ref": "#/definitions/UserQuestion"
+        }
+      ]
+    },
+    "StringQuestion": {
+      "type": "object",
+      "properties": {
+        "LineType": {
+          "type": "integer",
+          "enum": [
+            0,
+            1,
+            2
+          ]
+        },
+        "MinimumLength": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "MaximumLength": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "Type": {
+          "type": "string",
+          "const": "StringQuestion"
+        },
+        "Label": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "Note": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "Variable": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "Required": {
+          "type": "boolean"
+        },
+        "EnableIf": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "CustomValidations": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "$ref": "#/definitions/CustomValidation"
+          }
+        }
+      },
+      "required": [
+        "LineType",
+        "MinimumLength",
+        "MaximumLength",
+        "Type",
+        "Label",
+        "Note",
+        "Variable",
+        "Required",
+        "EnableIf"
+      ]
+    },
+    "TimeOfDayQuestion": {
+      "type": "object",
+      "properties": {
+        "Type": {
+          "type": "string",
+          "const": "TimeOfDayQuestion"
+        },
+        "Label": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "Note": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "Variable": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "Required": {
+          "type": "boolean"
+        },
+        "EnableIf": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "CustomValidations": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "$ref": "#/definitions/CustomValidation"
+          }
+        }
+      },
+      "required": [
+        "Type",
+        "Label",
+        "Note",
+        "Variable",
+        "Required",
+        "EnableIf"
+      ]
+    },
+    "TimeSpanQuestion": {
+      "type": "object",
+      "properties": {
+        "Constraint": {
+          "type": "integer",
+          "enum": [
+            0,
+            1,
+            2,
+            3,
+            4
+          ]
+        },
+        "Minimum": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "Maximum": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "Type": {
+          "type": "string",
+          "const": "TimeSpanQuestion"
+        },
+        "Label": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "Note": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "Variable": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "Required": {
+          "type": "boolean"
+        },
+        "EnableIf": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "CustomValidations": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "$ref": "#/definitions/CustomValidation"
+          }
+        }
+      },
+      "required": [
+        "Constraint",
+        "Minimum",
+        "Maximum",
+        "Type",
+        "Label",
+        "Note",
+        "Variable",
+        "Required",
+        "EnableIf"
+      ]
+    },
+    "UserQuestion": {
+      "type": "object",
+      "properties": {
+        "JobTypeCategories": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "JobTypeIds": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "Type": {
+          "type": "string",
+          "const": "UserQuestion"
+        },
+        "Label": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "Note": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "Variable": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "Required": {
+          "type": "boolean"
+        },
+        "EnableIf": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "CustomValidations": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "$ref": "#/definitions/CustomValidation"
+          }
+        }
+      },
+      "required": [
+        "JobTypeCategories",
+        "JobTypeIds",
+        "Type",
+        "Label",
+        "Note",
+        "Variable",
+        "Required",
+        "EnableIf"
+      ]
+    }
+  },
+  "type": "object",
+  "properties": {
+    "Questions": {
+      "type": [
+        "array",
+        "null"
+      ],
+      "items": {
+        "$ref": "#/definitions/QuestionBase"
+      }
+    }
+  },
+  "required": [
+    "Questions"
+  ]
+}
+
+
+
+
+
+
+
+
+
+
+
+
+

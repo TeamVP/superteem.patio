@@ -40,7 +40,8 @@
         "maximumResponses": 1,
         "variable": "$sibr_occurred",
         "note": null,
-        "enableIf": null
+        "enableIf": null,
+        "valueMode": "index"
       }
     ]
   },
@@ -226,7 +227,8 @@
         "customValidations": [],
         "options": ["No", "Yes"],
         "minimumResponses": 0,
-        "maximumResponses": 1
+        "maximumResponses": 1,
+        "valueMode": "index"
       },
       {
         "type": "MultipleChoiceQuestion",
@@ -238,7 +240,8 @@
         "customValidations": [],
         "options": ["Some patients", "Most patients", "Almost all patients", "Every patient"],
         "minimumResponses": 0,
-        "maximumResponses": 1
+        "maximumResponses": 1,
+        "valueMode": "index"
       },
       {
         "type": "MultipleChoiceQuestion",
@@ -250,7 +253,8 @@
         "customValidations": [],
         "options": ["Some patients", "Most patients", "Almost all patients", "Every patient"],
         "minimumResponses": 0,
-        "maximumResponses": 1
+        "maximumResponses": 1,
+        "valueMode": "index"
       },
       {
         "type": "MultipleChoiceQuestion",
@@ -262,7 +266,8 @@
         "customValidations": [],
         "options": ["Some patients", "Most patients", "Almost all patients", "Every patient"],
         "minimumResponses": 0,
-        "maximumResponses": 1
+        "maximumResponses": 1,
+        "valueMode": "index"
       },
       {
         "type": "MultipleChoiceQuestion",
@@ -274,7 +279,8 @@
         "customValidations": [],
         "options": ["Some patients", "Most patients", "Almost all patients", "Every patient"],
         "minimumResponses": 0,
-        "maximumResponses": 1
+        "maximumResponses": 1,
+        "valueMode": "index"
       }
     ]
   },

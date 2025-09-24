@@ -44,6 +44,8 @@ export interface MultipleChoiceQuestion extends BaseQuestion {
   options: string[]; // minItems 1
   minimumResponses?: number | null;
   maximumResponses?: number | null;
+  // valueMode: 'value' stores option strings; 'index' stores numeric indices (supports expressions like $var[0] === 1)
+  valueMode?: 'value' | 'index';
 }
 
 export interface StringQuestion extends BaseQuestion {

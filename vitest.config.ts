@@ -2,7 +2,8 @@ import { defineConfig } from 'vitest/config';
 import react from '@vitejs/plugin-react';
 import { fileURLToPath, URL } from 'node:url';
 
-const enableCoverage = !(globalThis as typeof globalThis).process?.env?.NO_COVERAGE;
+// Disable coverage by default to reduce memory pressure; enable only when COVERAGE=1
+const enableCoverage = (globalThis as typeof globalThis).process?.env?.COVERAGE === '1';
 
 export default defineConfig({
   plugins: [react()],
@@ -15,9 +16,12 @@ export default defineConfig({
     globals: true,
     environment: 'happy-dom',
     setupFiles: './vitest.setup.ts',
-    pool: 'forks',
+    // Use threads pool (lighter than forks) & single worker reuse to cap memory
+    pool: 'threads',
     minWorkers: 1,
     maxWorkers: 1,
+    isolate: false, // reuse environment to avoid large per-test allocations
+    testTimeout: 15000,
     coverage: {
       provider: 'v8',
       reportsDirectory: './coverage',

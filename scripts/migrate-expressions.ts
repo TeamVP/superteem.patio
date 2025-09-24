@@ -1,25 +1,30 @@
-// Minimal demonstrator for converting simple JS-like expressions to JSONLogic.
-// Review output before publish-time adoption.
+#!/usr/bin/env node
+// Expression migration CLI: converts JS-like mini expressions to JSONLogic via hybrid parser.
+// Usage: pnpm ts-node scripts/migrate-expressions.ts "<expr>" [...more]
+// If no arguments provided, runs sample expressions.
 
-type JSONLogic = any;
+import { migrateExpression } from '../src/lib/expression/parser';
+import process from 'node:process';
+import { fileURLToPath } from 'node:url';
 
-function migrate(expr: string): JSONLogic {
-  const varRef = (name: string) => ({ var: name.replace(/^\$/, '') });
-  const replaced = expr.replace(/\$([a-z0-9_]+)\[0\]/g, (_m, v) => `${v}.0`);
-  if (/&&/.test(replaced) && /===\s*1/.test(replaced)) {
-    return { '==': [{ var: 'sibr_occurred.0' }, 1] };
+function run(exprs: string[]): void {
+  for (const expr of exprs) {
+    const result = migrateExpression(expr);
+    console.log(JSON.stringify(result, null, 2));
   }
-  if (/patient_census/.test(replaced) && />=/.test(replaced) && /\+/.test(replaced)) {
-    return {
-      '>=': [varRef('$patient_census'), { '+': [{ var: 'bedside' }, { var: 'hallway' }] }],
-    };
-  }
-  return { note: 'manual_review_required', source: expr };
 }
 
-// Demo:
-const samples = [
-  '$sibr_occurred && $sibr_occurred[0] === 1',
-  '$patient_census >= ($bedside || 0) + ($hallway || 0)',
-];
-for (const s of samples) console.log(JSON.stringify(migrate(s), null, 2));
+const args = process.argv.slice(2);
+// Execute only when run directly (not when imported)
+if (fileURLToPath(import.meta.url) === process.argv[1]) {
+  if (args.length === 0) {
+    run([
+      '$sibr_occurred && $sibr_occurred[0] === 1',
+      '$patient_census >= ($bedside || 0) + ($hallway || 0)',
+    ]);
+  } else {
+    run(args);
+  }
+}
+
+export { migrateExpression };

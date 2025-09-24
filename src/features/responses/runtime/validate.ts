@@ -125,6 +125,8 @@ export function runValidation(
               if (iq.maximum != null && num > iq.maximum) {
                 addFieldError(q.id, `Maximum value is ${iq.maximum}`);
               }
+            } else {
+              addFieldError(q.id, 'Must be a number');
             }
           }
           break;

@@ -148,3 +148,9 @@
 - [ ] RQ-030: Add all the incomplete RQs to the project tasks.
 - [ ] RQ-031: Heavy test gating: conditionally run large/legacy tests with RUN_HEAVY env flag.
 
+## Normalization Layer Tasks
+
+- [x] Normalization unit tests — idempotence, non-mutation, field preservation
+- [x] Document normalization (see docs/spec.md Template Normalization section)
+- [ ] Schema generation stub (future stricter schema with const Type + ValueMode)
+

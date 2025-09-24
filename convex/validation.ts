@@ -92,6 +92,11 @@ export function validateAnswers(
         if (q.maximum != null && val > q.maximum) {
           pushError(errors, variable, `Max ${q.maximum}`);
         }
+      } else if (q.type === 'IntegerQuestion' && val != null) {
+        const asNum = Number(val);
+        if (Number.isNaN(asNum)) {
+          pushError(errors, variable, 'Must be a number');
+        }
       }
       if (q.type === 'MultipleChoiceQuestion' && Array.isArray(val)) {
         if (q.minimumResponses != null && val.length < q.minimumResponses) {

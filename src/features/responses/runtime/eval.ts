@@ -13,10 +13,27 @@ export function evaluate(expr: JSONLogicExpression, ctx: EvalContext): unknown {
   const op = Object.keys(expr)[0];
   const val = (expr as Record<string, unknown>)[op];
   switch (op) {
-    case '&&':
-      return (val as JSONLogicExpression[]).every((e) => truthy(evaluate(e, ctx)));
-    case '||':
-      return (val as JSONLogicExpression[]).some((e) => truthy(evaluate(e, ctx)));
+    case '&&': {
+      // Return last evaluated value (short-circuit on falsey)
+      const arr = val as JSONLogicExpression[];
+      let last: unknown = true;
+      for (const e of arr) {
+        last = evaluate(e, ctx);
+        if (!truthy(last)) return last;
+      }
+      return last;
+    }
+    case '||': {
+      // Return first truthy or last value (coalescing)
+      const arr = val as JSONLogicExpression[];
+      let last: unknown = undefined;
+      for (const e of arr) {
+        const v = evaluate(e, ctx);
+        if (truthy(v)) return v;
+        last = v;
+      }
+      return last;
+    }
     case '+':
       return (val as JSONLogicExpression[]).reduce(
         (a, b) => Number(a) + Number(evaluate(b, ctx)),
@@ -56,6 +73,19 @@ export function evaluate(expr: JSONLogicExpression, ctx: EvalContext): unknown {
     case '<=': {
       const [a, b] = val as JSONLogicExpression[];
       return Number(evaluate(a, ctx)) <= Number(evaluate(b, ctx));
+    }
+    case '!=': {
+      const [a, b] = val as JSONLogicExpression[];
+      // intentional loose inequality to mirror JSONLogic semantics
+      return evaluate(a, ctx) != evaluate(b, ctx);
+    }
+    case '!==': {
+      const [a, b] = val as JSONLogicExpression[];
+      return evaluate(a, ctx) !== evaluate(b, ctx);
+    }
+    case '!': {
+      const v = (val as JSONLogicExpression[])[0];
+      return !truthy(evaluate(v, ctx));
     }
     default:
       return null;

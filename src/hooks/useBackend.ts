@@ -7,11 +7,11 @@ import { api } from '../../convex/_generated/api';
 export function useCreateTemplate() {
   return useMutation(api.templates.createTemplate);
 }
-export function useSaveTemplateDraft() {
-  return useMutation(api.templates.saveTemplateDraft);
-}
 export function usePublishTemplateVersion() {
   return useMutation(api.templates.publishTemplateVersion);
+}
+export function useBeginEditTemplate() {
+  return useMutation(api.templates.beginEdit);
 }
 export function useRevertTemplateVersion() {
   return useMutation(api.templates.revertTemplateVersion);
@@ -36,13 +36,20 @@ export function useSubmitResponse() {
     try {
       return await mutate(args);
     } catch (e: unknown) {
-      if (
-        e &&
-        typeof e === 'object' &&
-        'code' in e &&
-        (e as { code?: string }).code === 'INVALID_RESPONSE'
-      ) {
-        throw e as SubmitResponseError;
+      // ConvexError surfaces as an Error with a `data` payload
+      if (e && typeof e === 'object') {
+        const errAny = e as { data?: unknown } & Record<string, unknown>;
+        const data = (errAny.data || null) as {
+          code?: string;
+          fieldErrors?: Record<string, string[]>;
+        } | null;
+        if (data?.code === 'INVALID_RESPONSE') {
+          const normalized: SubmitResponseError = {
+            code: data.code,
+            fieldErrors: data.fieldErrors || {},
+          };
+          throw normalized;
+        }
       }
       throw e;
     }
@@ -84,4 +91,30 @@ export function useSlugAvailability(slug: string | undefined) {
   const result = useQuery(api.templates.slugAvailable, s ? { slug: s } : 'skip');
   if (!s) return { available: undefined } as { available: boolean | undefined };
   return (result as { available: boolean }) || { available: undefined };
+}
+
+// Auth / user
+export function useCurrentUser() {
+  return useQuery(api.rbac.currentUser, {});
+}
+
+// Responses: submitted template ids for current user
+export function useSubmittedTemplateIdsForUser() {
+  return useQuery(api.responses.listSubmittedTemplateIdsForUser, {});
+}
+
+// App settings (with defensive fallback if function missing or errors)
+export function useAppSettings(): { minTemplateCreationRole: string } | undefined {
+  try {
+    const data = useQuery(api.settings.getAppSettings, {});
+    if (!data) return { minTemplateCreationRole: 'author' }; // default if undefined during load
+    return data as { minTemplateCreationRole: string };
+  } catch (e: unknown) {
+    // If Convex reports function missing, return default to avoid blocking UI
+    const msg = (e as Error | { message?: string } | null)?.message || '';
+    if (/Could not find public function/i.test(msg) || /Not registered/i.test(msg)) {
+      return { minTemplateCreationRole: 'author' };
+    }
+    return { minTemplateCreationRole: 'author' };
+  }
 }
